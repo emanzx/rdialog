@@ -1,5 +1,4 @@
 
-#                                vim:ts=4:sw=4:
 # = rdialog - A dialog gem for Ruby
 #
 # Homepage::  http://built-it.net/ruby/rdialog/
@@ -10,120 +9,138 @@
 # class RDialog::Dialog.new( array, str, array)
 #
 
-#=================================================
-# I did the following:
-#   - renamed the class to MRDialog
-#   - removed tabs
-#   - added support for the follwoing:
-#     - form
-#     - 
-#
-# muquit@muquit.com, Apr-05-2014
-#=================================================
-
 require 'logger'
 require 'tempfile'
 require 'date'
 require 'time'
 require 'shellwords'
+
+#
+# MRDialog - Interface to ncurses dialog program
+#
 class MRDialog 
-           DIALOG_OK = 0
-       DIALOG_CANCEL = 1
-         DIALOG_HELP = 2
-        DIALOG_EXTRA = 3
-    DIALOG_ITEM_HELP = 4
-          DIALOG_ESC = 255
-    #MRDialog - Interface to ncurses dialog program
 
-    #
-    # All accessors are boolean unless otherwise noted.
-    #
+  DIALOG_OK = 0
+  DIALOG_CANCEL = 1
+  DIALOG_HELP = 2
+  DIALOG_EXTRA = 3
+  DIALOG_ITEM_HELP = 4
+  DIALOG_ESC = 255
 
-    #
-    # This gives you some control over the box dimensions when 
-    # using auto sizing (specifying 0 for height and width). 
-    # It represents width / height. The default is 9, 
-    # which means 9 characters wide to every 1 line high.
-    #
-    attr_accessor :aspect
+  #
+  # Rather than draw graphics lines around boxes, draw ASCII "+" and "-" in
+  # the same place. See also "no_lines".
+  #
+  #     dialog.ascii_lines = false
+  #
+  attr_accessor :ascii_lines
 
-    #
-    # Specifies a backtitle string to be displayed on the backdrop, 
-    # at the top of the screen.
-    #
-    attr_accessor :backtitle
+  #
+  # This gives you some control over the box dimensions when using auto sizing 
+  # (specifying 0 for height and width). It represents width / height. The
+  # default is 9, which means 9 characters wide to every 1 line high.
+  #
+  #     dialog.aspect = 9
+  #
+  attr_accessor :aspect
 
-    #
-    # Sound the audible alarm each time the screen is refreshed.
-    #
-    attr_accessor :beep
+  #
+  # Specifies a backtitle string to be displayed on the backdrop, at the top of
+  # the screen.
+  #
+  #     dialog.backtitle = 'Backdrop Title'
+  #
+  attr_accessor :backtitle
 
-    #
-    # Specify the position of the upper left corner of a dialog box
-    # on the screen, as an array containing two integers.
-    #
-    attr_accessor :begin
+  #
+  # Specify the position of the upper left corner of a dialog box
+  # on the screen as an array containing two integers.
+  #
+  #     dialog.begin = [0, 0]
+  #
+  attr_accessor :begin
 
-    #
-    # Interpret embedded newlines in the dialog text as a newline 
-    # on the screen. Otherwise, dialog will only wrap lines where 
-    # needed to fit inside the text box. Even though you can control 
-    # line breaks with this, dialog will still wrap any lines that are 
-    # too long for the width of the box. Without cr-wrap, the layout
-    # of your text may be formatted to look nice in the source code of 
-    # your script without affecting the way it will look in the dialog.
-    #
-    attr_accessor :crwrap
+  #
+  # Sound the audible alarm each time the screen is refreshed.
+  #
+  attr_accessor :beep
 
-    #
-    # Interpret the tags data for checklist, radiolist and menuboxes 
-    # adding a column which is displayed in the bottom line of the 
-    # screen, for the currently selected item.
-    #
-    attr_accessor :itemhelp
+  #
+  # Override the label used for "Cancel" buttons.
+  #
+  #     default.cancel_label = 'New Cancel'
+  #
+  attr_accessor :cancel_label
 
-    #
-    # Suppress the "Cancel" button in checklist, inputbox and menubox 
-    # modes. A script can still test if the user pressed the ESC key to 
-    # cancel to quit.
-    #
-    attr_accessor :nocancel
+  #
+  # Clears the widget screen, keeping only the screen_color background. Use
+  # this when you combine widgets with "and_widget" to erase the contents of a
+  # previous widget on the screen, so it won't be seen under the contents of a
+  # following widget. Understand this as the complement of "keep_window".
+  #
+  attr_accessor :clear
 
-    #
-    # Draw a shadow to the right and bottom of each dialog box.
-    # 
-    attr_accessor :shadow
+  #
+  # Interpret embedded newlines in the dialog text as a newline 
+  # on the screen. Otherwise, dialog will only wrap lines where 
+  # needed to fit inside the text box. Even though you can control 
+  # line breaks with this, dialog will still wrap any lines that are 
+  # too long for the width of the box. Without cr-wrap, the layout
+  # of your text may be formatted to look nice in the source code of 
+  # your script without affecting the way it will look in the dialog.
+  #
+  attr_accessor :crwrap
 
-    #
-    # Sleep (delay) for the given integer of seconds after processing 
-    # a dialog box.
-    #
-    attr_accessor :sleep
+  #
+  # Interpret the tags data for checklist, radiolist and menuboxes 
+  # adding a column which is displayed in the bottom line of the 
+  # screen, for the currently selected item.
+  #
+  attr_accessor :itemhelp
 
-    #
-    # Convert each tab character to one or more spaces. 
-    # Otherwise, tabs are rendered according to the curses library's 
-    # interpretation.
-    #
-    attr_accessor :tabcorrect
+  #
+  # Suppress the "Cancel" button in checklist, inputbox and menubox 
+  # modes. A script can still test if the user pressed the ESC key to 
+  # cancel to quit.
+  #
+  attr_accessor :nocancel
 
-    #
-    # Specify the number(int) of spaces that a tab character occupies 
-    # if the tabcorrect option is set true. The default is 8.
-    #
-    attr_accessor :tablen
+  #
+  # Draw a shadow to the right and bottom of each dialog box.
+  # 
+  attr_accessor :shadow
 
-    #
-    # Title string to be displayed at the top of the dialog box.
-    #
-    attr_accessor :title
+  #
+  # Sleep (delay) for the given integer of seconds after processing 
+  # a dialog box.
+  #
+  attr_accessor :sleep
 
-    #
-    # Alternate path to dialog. If this is not set, environment path
-    # is used.
-    attr_accessor :path_to_dialog
+  #
+  # Convert each tab character to one or more spaces. 
+  # Otherwise, tabs are rendered according to the curses library's 
+  # interpretation.
+  #
+  attr_accessor :tabcorrect
 
-    # -- muquit@muquit.com mod starts---
+  #
+  # Specify the number(int) of spaces that a tab character occupies 
+  # if the tabcorrect option is set true. The default is 8.
+  #
+  attr_accessor :tablen
+
+  #
+  # Title string to be displayed at the top of the dialog box.
+  #
+  attr_accessor :title
+
+  #
+  # Alternate path to dialog. If this is not set, environment path
+  # is used.
+  #
+  attr_accessor :path_to_dialog
+
+  # -- muquit@muquit.com mod starts---
     
   # exit codes
   attr_accessor :dialog_ok
@@ -140,15 +157,11 @@ class MRDialog
   # Override the label used for "OK" buttons
   attr_accessor :ok_label
 
-  # clear screen
-  attr_accessor :clear
 
   # make the password widget friendlier but less secure, by echoing
   # asterisks for each character.
   attr_accessor :insecure
 
-  # rather than draw graphics lines around boxes, draw ASCII + and -
-  attr_accessor :ascii_lines
 
   attr_accessor :separator
 
@@ -1143,103 +1156,105 @@ class MRDialog
   private  
 
     def option_string
-        # make sure 'dialog' is installed
-        # muquit@muquit.com 
-        exe_loc = ''
-        unless @path_to_dialog
-          exe_loc = which("dialog")
-          ostring = exe_loc
-        else
-          exe_loc = @path_to_dialog
-          if !File.exists?(exe_loc)
-            raise "Specified path of dialog '#{exe_loc}' does not exist"
-          end
-          if !File.executable?(exe_loc)
-            raise "The program #{exe_loc} is not executable"
-          end
+      # make sure 'dialog' is installed
+      # muquit@muquit.com 
+      exe_loc = ''
+      unless @path_to_dialog
+        exe_loc = which("dialog")
+        ostring = exe_loc
+      else
+        exe_loc = @path_to_dialog
+        if !File.exists?(exe_loc)
+          raise "Specified path of dialog '#{exe_loc}' does not exist"
         end
-        raise "'dialog' executable not found in path" unless exe_loc
-        ostring = exe_loc + " "
+        if !File.executable?(exe_loc)
+          raise "The program #{exe_loc} is not executable"
+        end
+      end
+      raise "'dialog' executable not found in path" unless exe_loc
+      ostring = exe_loc + " "
 
-        if @aspect
-          ostring += "--aspect " + aspect + " "
-        end
-        
-        if @beep
-          ostring += "--beep "
-        end
-        
-        if @boxbegin 
-          ostring += "--begin " + @boxbegin[0] + @boxbegin[1] + " "
-        end
+      if @aspect
+        ostring += "--aspect " + aspect + " "
+      end
+      
+      if @beep
+        ostring += "--beep "
+      end
+      
+      if @boxbegin 
+        ostring += "--begin " + @boxbegin[0] + @boxbegin[1] + " "
+      end
 
-        if @backtitle
-          ostring += "--backtitle \"" + @backtitle + "\" "
-        end 
+      if @backtitle
+        ostring += "--backtitle \"" + @backtitle + "\" "
+      end 
 
-        if @itemhelp
-          ostring += "--item-help "
-        end
+      if @cancel_label
+        ostring += "--cancel-label \"" + @cancel_label + "\" "
+      end
 
-        unless @shadow == nil
-          if @shadow == true
-            ostring += "--shadow "
-          else 
-            ostring += "--no-shadow "
-          end
-        end
+      if @itemhelp
+        ostring += "--item-help "
+      end
 
-        if @sleep
-          ostring += "--sleep " + @sleep.to_s + " "
+      unless @shadow == nil
+        if @shadow == true
+          ostring += "--shadow "
+        else 
+          ostring += "--no-shadow "
         end
+      end
 
-        if @tabcorrect
-          ostring += "--tab-correct "
-        end
+      if @sleep
+        ostring += "--sleep " + @sleep.to_s + " "
+      end
 
-        if @tablen
-          ostring += "--tab-len " + @tablen.to_s + " "
-        end
+      if @tabcorrect
+        ostring += "--tab-correct "
+      end
 
-        if @title
-          #      ostring += "--title " + "\"" + @title.to_s "\"" + " "
-          # muquit@muquit.com  Apr-01-2014 
-          ostring += "--title \"" + @title.to_s + "\" "
-        end
+      if @tablen
+        ostring += "--tab-len " + @tablen.to_s + " "
+      end
 
-        # muquit@muquit.com mod starts--
-        if @clear
-            ostring += "--clear "
-        end
+      if @title
+        #      ostring += "--title " + "\"" + @title.to_s "\"" + " "
+        # muquit@muquit.com  Apr-01-2014 
+        ostring += "--title \"" + @title.to_s + "\" "
+      end
 
-        if @insecure
-            ostring += "--insecure "
-        end
+      # muquit@muquit.com mod starts--
+      if @clear
+          ostring += "--clear "
+      end
 
-        if @ascii_lines
-            ostring += "--ascii-lines "
-        end
+      if @insecure
+          ostring += "--insecure "
+      end
 
-        if @ok_label
-            ostring += "--ok-label #{@ok_label} "
-        end
+      if @ascii_lines
+          ostring += "--ascii-lines "
+      end
 
-        if @separator
-            ostring += "--separator \"#{@separator}\" "
-        end
-        if @scrollbar
-            ostring += "--scrollbar "
-        end
-        # muquit@muquit.com mod ends--
+      if @ok_label
+          ostring += "--ok-label #{@ok_label} "
+      end
 
-        if @nocancel
-          ostring += "--nocancel "
-        end
+      if @separator
+          ostring += "--separator \"#{@separator}\" "
+      end
+      if @scrollbar
+          ostring += "--scrollbar "
+      end
+      # muquit@muquit.com mod ends--
 
-        return ostring
+      if @nocancel
+        ostring += "--nocancel "
+      end
+
+      return ostring
   end
 end
-
-
 
 #Dir[File.join(File.dirname(__FILE__), 'rdialog/**/*.rb')].sort.each { |lib| require lib }
