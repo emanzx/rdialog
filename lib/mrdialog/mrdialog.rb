@@ -245,7 +245,11 @@ class MRDialog
     if dry_run
       0
     else
-      system(cmd)
+      if block_given?
+        IO.popen(cmd, 'w') { |fh| yield fh }
+      else
+        system(cmd)
+      end
     end 
   end
 
@@ -313,23 +317,10 @@ class MRDialog
   # Author:: muquit@muquit.com Apr-02-2014 
   ##---------------------------------------------------  
   def gauge(text, height=0, width=0, percent=0)
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--gauge"
-    cmd << " "
-    cmd << '"'
-    cmd << text
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    cmd << " "
-    cmd << percent.to_s
-
-    log_debug "Command:\n#{cmd}"
-    IO.popen(cmd, "w") {|fh| yield fh}
+    cmd = [ option_string(),
+      '--gauge',
+      %Q(#{text.inspect} #{height} #{width} #{percent}) ].join(' ')
+    run(cmd) { |fh| yield fh }
   end
 
 
@@ -916,10 +907,9 @@ class MRDialog
   # Returns false if esc was pushed
   #
   def infobox(text, height=0, width=0)
-    command = [ option_string(), 
+    run [ option_string(), 
       '--infobox', 
       %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
-    run(command)
   end
 
   #      A  radiolist box is similar to a menu box.  The only difference
@@ -1019,8 +1009,7 @@ class MRDialog
   # and the calling shell script can continue its operation.
   #
   def msgbox(text="Text Goes Here", height=0, width=0)
-    command = [ option_string, '--msgbox', %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
-    return run(command)
+    run [ option_string, '--msgbox', %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
   end
 
   #      A password box is similar to an input box, except that the text

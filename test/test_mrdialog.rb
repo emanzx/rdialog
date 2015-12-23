@@ -24,6 +24,13 @@ class TestMRDialog < Minitest::Test
   # Commands
   #
 
+  def test_gauge_command
+    dialog.gauge('"gauge" test', 24, 80, 0)
+    cmd = dialog.last_cmd
+    assert_includes(cmd, '"\"gauge\" test"', cmd)
+    assert_includes(cmd, ' 24 80 0', cmd)
+  end
+
   def test_infobox_command
     dialog.infobox('"infobox" test', 24, 80)
     assert_includes(dialog.last_cmd, '"\"infobox\" test"', dialog.last_cmd)
