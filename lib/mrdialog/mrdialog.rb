@@ -914,11 +914,12 @@ class MRDialog
   # some time to finish.
   #
   # Returns false if esc was pushed
+  #
   def infobox(text, height=0, width=0)
-    command = option_string() + "--infobox \"" + text.to_s +
-                "\" " + height.to_i.to_s + " " + width.to_i.to_s + " "
-    success = system(command)
-    return success
+    command = [ option_string(), 
+      '--infobox', 
+      %Q(#{text} #{height.to_i} #{width.to_i}) ].join(' ')
+    run(command)
   end
 
   #      A  radiolist box is similar to a menu box.  The only difference
