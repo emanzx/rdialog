@@ -1,4 +1,3 @@
-
 # = rdialog - A dialog gem for Ruby
 #
 # Homepage::  http://built-it.net/ruby/rdialog/
@@ -90,6 +89,41 @@ class MRDialog
   # your script without affecting the way it will look in the dialog.
   #
   attr_accessor :crwrap
+
+  #
+  # If the host provides `strftime`, this option allows you to specify the
+  # format of the date printed for the `--calendar` widget. The time of day
+  # (hour, minute, second) are the current local time
+  #
+  #     default.date_format = "%h%m%s"
+  #
+  attr_accessor :date_format
+
+  #
+  # Make the default value of the `yes/no` box a `No`. Likewise, make the
+  # default button of widgets that provide "OK" and "Cancel" a `Cancel`. If
+  # `nocancel` or `visit_items` are given those options override this, making
+  # the default button always "Yes" (internally the same as "OK").
+  #
+  #     dialog.defaultno = true
+  #
+  attr_accessor :defaultno
+
+  #
+  # Set the default (preselected) button in a widget. By preselecting a button,
+  # a script makes it possible for the user to simply press "Enter" to proceed
+  # through a dialog with minimum interaction.
+  #
+  # The option's value is the name of the button: "ok", "yes", "cancel", "no",
+  # "help" or "extra".
+  #
+  # Normally the first button in each widget is the default. The first button
+  # shown is determined by the widget together with the `nook` and `nocancel`
+  # options. If this option is not given, there is no default button assigned.
+  #
+  #     dialog.default_button = 'ok'
+  #
+  attr_accessor :default_button
 
   #
   # Interpret the tags data for checklist, radiolist and menuboxes 
@@ -1192,6 +1226,18 @@ class MRDialog
 
       if @cancel_label
         ostring += "--cancel-label \"" + @cancel_label + "\" "
+      end
+
+      if @date_format
+        ostring += "--date-format \"" + @date_format + "\" "
+      end
+
+      if @defaultno
+        ostring += "--defaultno "
+      end
+
+      if @default_button
+        ostring += "--default-button \"" + @default_button + "\" "
       end
 
       if @itemhelp
