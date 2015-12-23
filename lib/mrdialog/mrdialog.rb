@@ -918,7 +918,7 @@ class MRDialog
   def infobox(text, height=0, width=0)
     command = [ option_string(), 
       '--infobox', 
-      %Q(#{text} #{height.to_i} #{width.to_i}) ].join(' ')
+      %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
     run(command)
   end
 
@@ -1019,7 +1019,7 @@ class MRDialog
   # and the calling shell script can continue its operation.
   #
   def msgbox(text="Text Goes Here", height=0, width=0)
-    command = [ option_string, '--msgbox', %Q{"#{text}" #{height.to_i} #{width.to_i}} ].join(' ')
+    command = [ option_string, '--msgbox', %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
     return run(command)
   end
 

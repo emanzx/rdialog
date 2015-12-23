@@ -15,8 +15,8 @@ class TestMRDialog < Minitest::Test
 
   def commands
     { 
-      infobox: [ 'infobox test', 24, 80 ],
-      msgbox: [ 'msgbox test', 24, 80 ],
+      infobox: [ 'infobox', 24, 80 ],
+      msgbox: [ 'msgbox', 24, 80 ],
     }
   end
 
@@ -25,14 +25,14 @@ class TestMRDialog < Minitest::Test
   #
 
   def test_infobox_command
-    dialog.infobox('infobox test', 24, 80)
-    assert_includes(dialog.last_cmd, 'infobox test')
-    assert_includes(dialog.last_cmd, ' 24 80')
+    dialog.infobox('"infobox" test', 24, 80)
+    assert_includes(dialog.last_cmd, '"\"infobox\" test"', dialog.last_cmd)
+    assert_includes(dialog.last_cmd, ' 24 80', dialog.last_cmd)
   end
 
   def test_msgbox_command
-    dialog.msgbox('msgbox test', 24, 80)
-    assert_includes(dialog.last_cmd, 'msgbox test')
+    dialog.msgbox('"msgbox" test', 24, 80)
+    assert_includes(dialog.last_cmd, '"\"msgbox\" test"')
     assert_includes(dialog.last_cmd, ' 24 80')
   end
 
