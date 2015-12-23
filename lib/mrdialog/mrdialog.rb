@@ -276,14 +276,14 @@ class MRDialog
     path_ext = ENV['PATHEXT']
     exts = ['']
     if path_ext # WINDOW$
-        exts = path_ext.split(';')
+      exts = path_ext.split(';')
     end
     path = ENV['PATH']
     path.split(File::PATH_SEPARATOR).each do |dir|
-        exts.each do |ext|
-          candidate = File.join(dir, "#{prog}#{ext}")
-          return candidate if File.executable?(candidate)
-        end
+      exts.each do |ext|
+        candidate = File.join(dir, "#{prog}#{ext}")
+        return candidate if File.executable?(candidate)
+      end
     end
     return nil
   end
@@ -351,9 +351,9 @@ class MRDialog
     cmd << "--progressbox"
     cmd << " "
     if description.length > 0
-        cmd << '"'
-        cmd << description
-        cmd << '"'
+      cmd << '"'
+      cmd << description
+      cmd << '"'
     end
     cmd << " "
     cmd << height.to_s
@@ -372,9 +372,9 @@ class MRDialog
     cmd << "--programbox"
     cmd << " "
     if description.length > 0
-        cmd << '"'
-        cmd << description
-        cmd << '"'
+      cmd << '"'
+      cmd << description
+      cmd << '"'
     end
     cmd << " "
     cmd << height.to_s
