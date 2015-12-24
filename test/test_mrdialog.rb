@@ -10,7 +10,7 @@ class TestMRDialog < Minitest::Test
 
   def setup
     @dialog = MRDialog.new
-    @dialog.dry_run = true
+    @dialog.dry_run = false
   end
 
   def commands
@@ -21,23 +21,45 @@ class TestMRDialog < Minitest::Test
   end
 
   #
-  # Commands
+  # Boxes
   #
 
-  def test_gauge_command
-    dialog.gauge('"gauge" test', 24, 80, 0)
+  def test_buildlist
+    items = []
+    items << [ '1', 'Item #1', true ]
+    items << [ '2', 'Item #2', false ]
+    items << [ '3', 'Item #3', false ]
+    dialog.buildlist('"buildlist" test', items, 24, 80, 12)
+    cmd = dialog.last_cmd
+    assert_includes(cmd, '"\"buildlist\" test"', cmd)
+    assert_includes(cmd, ' 24 80 12', cmd)
+    assert_includes(cmd, '"1" "Item #1" "on" ')
+    assert_includes(cmd, '"2" "Item #2" "off" ')
+    assert_includes(cmd, '"3" "Item #3" "off" ')
+  end
+
+  def test_gauge
+    dialog.gauge('"gauge" test', 24, 80, 0) do |f|
+      1.upto(100) do |a|
+        f.puts "XXX"
+        f.puts a
+        f.puts "The new\nmessage (#{a} percent)"
+        f.puts "XXX"
+        sleep 0.05
+      end
+    end
     cmd = dialog.last_cmd
     assert_includes(cmd, '"\"gauge\" test"', cmd)
     assert_includes(cmd, ' 24 80 0', cmd)
   end
 
-  def test_infobox_command
+  def test_infobox
     dialog.infobox('"infobox" test', 24, 80)
     assert_includes(dialog.last_cmd, '"\"infobox\" test"', dialog.last_cmd)
     assert_includes(dialog.last_cmd, ' 24 80', dialog.last_cmd)
   end
 
-  def test_msgbox_command
+  def test_msgbox
     dialog.msgbox('"msgbox" test', 24, 80)
     assert_includes(dialog.last_cmd, '"\"msgbox\" test"')
     assert_includes(dialog.last_cmd, ' 24 80')
