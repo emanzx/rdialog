@@ -70,12 +70,7 @@ class MRDialog
   #
   #     dialog.begin = [0, 0]
   #
-  attr_accessor :begin
-
-  #
-  # Sound the audible alarm each time the screen is refreshed.
-  #
-  attr_accessor :beep
+  attr_accessor :begin_pos
 
   #
   # Override the label used for "Cancel" buttons.
@@ -143,7 +138,7 @@ class MRDialog
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
   #
-  attr_accessor :itemhelp
+  attr_accessor :item_help
 
   #
   # Suppress the "Cancel" button in checklist, inputbox and menubox 
@@ -168,13 +163,13 @@ class MRDialog
   # Otherwise, tabs are rendered according to the curses library's 
   # interpretation.
   #
-  attr_accessor :tabcorrect
+  attr_accessor :tab_correct
 
   #
   # Specify the number(int) of spaces that a tab character occupies 
   # if the tabcorrect option is set true. The default is 8.
   #
-  attr_accessor :tablen
+  attr_accessor :tab_len
 
   #
   # Title string to be displayed at the top of the dialog box.
@@ -1212,100 +1207,31 @@ class MRDialog
         end
       end
       raise "'dialog' executable not found in path" unless exe_loc
-      ostring = exe_loc + " "
 
-      if @aspect
-        ostring += "--aspect " + aspect + " "
-      end
-      
-      if @beep
-        ostring += "--beep "
-      end
-      
-      if @boxbegin 
-        ostring += "--begin " + @boxbegin[0] + @boxbegin[1] + " "
-      end
+      options = [ exe_loc ]
 
-      if @backtitle
-        ostring += "--backtitle \"" + @backtitle + "\" "
-      end 
+      (options << "--ascii-lines") if ascii_lines
+      (options << "--aspect #{aspect}") if aspect
+      (options << "--backtitle #{backtitle.inspect}") if backtitle
+      (options << "--begin #{begin_pos[0..1].join(' ')}") if begin_pos
+      (options << "--cancel-label #{cancel_label.inspect})") if cancel_label
+      (options << "--clear") if clear
+      (options << "--date-format #{date_format.inspect}") if date_format
+      (options << "--defaultno") if defaultno
+      (options << "--default-button #{default_button.inspect}") if default_button
+      (options << "--insecure") if insecure
+      (options << "--item-help") if item_help
+      (options << "--nocancel") if nocancel
+      (options << "--ok-label #{ok_label.inspect}") if ok_label
+      (options << "--separator #{separator.inspect}") if separator
+      (options << "--scrollbar") if scrollbar
+      (options << shadow ? "--shadow" : "--no-shadow") unless shadow.nil?
+      (options << "--sleep #{sleep}") if sleep
+      (options << "--tab-correct") if tab_correct
+      (options << "--tab-len #{tab_len}") if tab_len
+      (options << "--title #{title.inspect}") if title
 
-      if @cancel_label
-        ostring += "--cancel-label \"" + @cancel_label + "\" "
-      end
-
-      if @date_format
-        ostring += "--date-format \"" + @date_format + "\" "
-      end
-
-      if @defaultno
-        ostring += "--defaultno "
-      end
-
-      if @default_button
-        ostring += "--default-button \"" + @default_button + "\" "
-      end
-
-      if @itemhelp
-        ostring += "--item-help "
-      end
-
-      unless @shadow == nil
-        if @shadow == true
-          ostring += "--shadow "
-        else 
-          ostring += "--no-shadow "
-        end
-      end
-
-      if @sleep
-        ostring += "--sleep " + @sleep.to_s + " "
-      end
-
-      if @tabcorrect
-        ostring += "--tab-correct "
-      end
-
-      if @tablen
-        ostring += "--tab-len " + @tablen.to_s + " "
-      end
-
-      if @title
-        #      ostring += "--title " + "\"" + @title.to_s "\"" + " "
-        # muquit@muquit.com  Apr-01-2014 
-        ostring += "--title \"" + @title.to_s + "\" "
-      end
-
-      # muquit@muquit.com mod starts--
-      if @clear
-          ostring += "--clear "
-      end
-
-      if @insecure
-          ostring += "--insecure "
-      end
-
-      if @ascii_lines
-          ostring += "--ascii-lines "
-      end
-
-      if @ok_label
-          ostring += "--ok-label #{@ok_label} "
-      end
-
-      if @separator
-          ostring += "--separator \"#{@separator}\" "
-      end
-      if @scrollbar
-          ostring += "--scrollbar "
-      end
-      # muquit@muquit.com mod ends--
-
-      if @nocancel
-        ostring += "--nocancel "
-      end
-
-      return ostring
+      return options.join(' ')
     end
 end
 
