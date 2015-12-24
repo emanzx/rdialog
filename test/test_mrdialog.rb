@@ -26,9 +26,9 @@ class TestMRDialog < Minitest::Test
 
   def test_buildlist
     items = []
-    items << [ '1', 'Item #1', true ]
-    items << [ '2', 'Item #2', false ]
-    items << [ '3', 'Item #3', false ]
+    items << dialog.list_item(tag: '1', item: 'Item #1', status: true)
+    items << dialog.list_item(tag: '2', item: 'Item #2', status: false)
+    items << dialog.list_item(tag: '3', item: 'Item #3', status: false)
     dialog.buildlist('"buildlist" test', items, 24, 80, 12)
     cmd = dialog.last_cmd
     assert_includes(cmd, '"\"buildlist\" test"', cmd)
@@ -45,7 +45,7 @@ class TestMRDialog < Minitest::Test
         f.puts a
         f.puts "The new\nmessage (#{a} percent)"
         f.puts "XXX"
-        sleep 0.05
+        sleep 0.001
       end
     end
     cmd = dialog.last_cmd

@@ -240,17 +240,20 @@ class MRDialog
   # Run a command.
   #
   def run(cmd)
+    result = 'debug'
     @last_cmd = cmd
-    logger.debug("Command: #{cmd}") if logger
+    logger.debug("Command: #{last_cmd}") if logger
     if dry_run
       @exit_code = 0
     else
       if block_given?
-        IO.popen(cmd, 'w') { |fh| yield fh }
+        result = IO.popen(cmd, 'w') { |fh| yield fh }
       else
-        system(cmd)
+        result = system(cmd)
       end
     end 
+    logger.debug("Exit code: #{exit_code}") if logger
+    result
   end
 
   ##---- muquit@muquit.com mod starts---
@@ -292,6 +295,81 @@ class MRDialog
     return nil
   end
 
+  #
+  # A **buildlist** dialog displays two lists, side-by-side. The list on the left
+  # shows unselected items. The list on the right shows selected  items. As
+  # items are selected or unselected, they move between the lists. Use SPACE bar
+  # to select/unselect an item.
+  # 
+  # Use a carriage return or the "OK" button to accept the current value in the
+  # selected-window and exit. The results are written using the order displayed
+  # in the selected-window.
+  #
+  # The initial on/off state of each entry is specified by _status_.
+  #
+  # The dialog behaves like a **menu**, using the `visit-items` to control
+  # whether the cursor is allowed to visit the lists directly.
+  #
+  #   * If `visit-items` is not given, tab-traversal uses two states
+  #     (OK/Cancel).
+  #   * If `visit-items` is given, tab-traversal uses four states
+  #     (Left/Right/OK/Cancel).
+  #
+  # Whether or not `visit-items` is given, it is possible to move the highlight
+  # between the two lists using the default "^" (left-column) and "$"
+  # (right-column) keys.
+  #
+  # On exit, a list of the _tag_ strings of those entries that are turned on
+  # will be printed on **dialog**'s output.
+  #
+  # If the `separate-output` option is not given, the strings will be quoted
+  # as needed to make it simple for scripts to separate them. By default, this
+  # uses double-quotes. See the `single-quoted` option, which modifies the
+  # quoting behavior.
+  #
+  # The caller is responsile for creating the items properly. Please look at
+  # `samples/buildlist.rb` for an example.
+  #
+  # Returns an array of selected tags.
+  #
+  #     items = []
+  #     items << dialog.list_item(tag: '1', item: 'Item #1', status: true)
+  #     items << dialog.list_item(tag: '2', item: 'Item #2', status: false)
+  #     dialog.buildlist('Buildlist Box', items)
+  #
+  def buildlist(text, items, height=0, width=0, listheight=0)
+    tmp = Tempfile.new('dialog') 
+    selected_tags = []
+
+    item_list = []
+    items.each { |item| item_list << "#{item[0].inspect} #{item[1].inspect} #{item[2].inspect}" }
+    item_list << '2>' << tmp.path
+    item_list = item_list.join(' ')
+
+    cmd = [ option_string(),
+      '--buildlist',
+      %Q(#{text.inspect} #{height} #{width} #{listheight} ),
+      item_list ].join(' ')
+
+    log_debug "Number of items: #{items.size}"
+    #log_debug "Command:\n#{cmd}"
+
+    run(cmd)
+    #@exit_code = $?.exitstatus
+    #log_debug "Exit code: #{exit_code}"
+    if @exit_code == 0
+      lines = tmp.read
+      log_debug "lines: #{lines} #{lines.class}"
+      sep = Shellwords.escape(@separator)
+      a = lines.split(/#{sep}/)
+      a.each do |tag|
+        log_debug "tag: '#{tag}'"
+        selected_tags << tag if tag.to_s.length > 0
+      end
+    end
+    tmp.close!
+    return selected_tags
+  end
     
   # A gauge box displays a meter along the bottom of the box.   The  
   # meter  indicates  the percentage.   New percentages are read from 
@@ -482,116 +560,9 @@ class MRDialog
     return tag
   end
    
-  #
-  # A **buildlist** dialog displays two lists, side-by-side. The list on the left
-  # shows unselected items. The list on the right shows selected  items. As
-  # items are selected or unselected, they move between the lists. Use SPACE bar
-  # to select/unselect an item.
-  # 
-  # Use a carriage return or the "OK" button to accept the current value in the
-  # selected-window and exit. The results are written using the order displayed
-  # in the selected-window.
-  #
-  # The initial on/off state of each entry is specified by _status_.
-  #
-  # The dialog behaves like a **menu**, using the `visit-items` to control
-  # whether the cursor is allowed to visit the lists directly.
-  #
-  #   * If `visit-items` is not given, tab-traversal uses two states
-  #     (OK/Cancel).
-  #   * If `visit-items` is given, tab-traversal uses four states
-  #     (Left/Right/OK/Cancel).
-  #
-  # Whether or not `visit-items` is given, it is possible to move the highlight
-  # between the two lists using the default "^" (left-column) and "$"
-  # (right-column) keys.
-  #
-  # On exit, a list of the _tag_ strings of those entries that are turned on
-  # will be printed on **dialog**'s output.
-  #
-  # If the `separate-output` option is not given, the strings will be quoted
-  # as needed to make it simple for scripts to separate them. By default, this
-  # uses double-quotes. See the `single-quoted` option, which modifies the
-  # quoting behavior.
-  #
-  # The caller is responsile for creating the items properly. Please look at
-  # `samples/buildlist.rb` for an example.
-  #
-  # Returns an array of selected tags.
-  #
-  def buildlist(text="Text Goes Here", items = nil, height=0, width=0, listheight=0)
-    tmp = Tempfile.new('dialog') 
-    selected_tags = []
-    itemlist = ''
 
-    items.each do |item|
-      itemlist << '"' 
-      itemlist << item[0].to_s
-      itemlist << '"'
-      itemlist << " "
-      itemlist << '"'
-      itemlist << item[1].to_s
-      itemlist << '"'
-      itemlist << " "
-      itemlist << '"'
-      if item[2]
-        item[2] = "on"
-      else
-        item[2] = "off"
-      end
-      itemlist << item[2]
-      itemlist << '"'
-      itemlist << " "
-    end
-    itemlist << "2>"
-    itemlist << tmp.path
-
-    cmd = ""
-
-    cmd << option_string()
-    if !@separator
-      @separator = "|"
-      cmd << " "
-      cmd << "--separator"
-      cmd << " "
-      cmd << '"'
-      cmd << @separator
-      cmd << '"'
-    end
-    cmd << " "
-    cmd << "--buildlist"
-    cmd << " "
-    cmd << '"'
-    cmd << " "
-    cmd << text
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    cmd << " "
-    cmd << listheight.to_s
-    cmd << " "
-    cmd << itemlist
-
-    log_debug "Number of items: #{items.size}"
-    log_debug "Command:\n#{cmd}"
-
-    run(cmd)
-    #@exit_code = $?.exitstatus
-    log_debug "Exit code: #{exit_code}"
-    if @exit_code == 0
-      lines = tmp.read
-      log_debug "lines: #{lines} #{lines.class}"
-      sep = Shellwords.escape(@separator)
-      a = lines.split(/#{sep}/)
-      a.each do |tag|
-        log_debug "tag: '#{tag}'"
-        selected_tags << tag if tag.to_s.length > 0
-      end
-    end
-    tmp.close!
-    return selected_tags
+  def list_item(args={})
+    [ args[:tag], args[:item], args[:status] ? 'on' : 'off' ] 
   end
 
   # A  pause  box displays a meter along the bottom of the box.  The
