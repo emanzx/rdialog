@@ -32,6 +32,7 @@ class TestMRDialog < Minitest::Test
     items << dialog.list_item(tag: '3', item: 'Item #3', status: false)
     dialog.buildlist('"buildlist" test', items, 24, 80, 12)
     cmd = dialog.last_cmd
+    assert_includes(cmd, '--buildlist', cmd)
     assert_includes(cmd, '"\"buildlist\" test"', cmd)
     assert_includes(cmd, ' 24 80 12', cmd)
     assert_includes(cmd, '"1" "Item #1" "on" ')
@@ -42,9 +43,13 @@ class TestMRDialog < Minitest::Test
   def test_calendar
     dialog.calendar('"calendar" test', 0, 0, 25, 12, 2015)
     cmd = dialog.last_cmd
+    assert_includes(cmd, '--calendar', cmd)
     assert_includes(cmd, '"\"calendar\" test"', cmd)
     assert_includes(cmd, '0 0 25 12 2015', cmd)
     assert_includes(cmd, '2> "', cmd)
+  end
+
+  def test_checklist
   end
 
   def test_gauge
@@ -58,20 +63,25 @@ class TestMRDialog < Minitest::Test
       end
     end
     cmd = dialog.last_cmd
+    assert_includes(cmd, '--gauge', cmd)
     assert_includes(cmd, '"\"gauge\" test"', cmd)
     assert_includes(cmd, ' 24 80 0', cmd)
   end
 
   def test_infobox
     dialog.infobox('"infobox" test', 24, 80)
-    assert_includes(dialog.last_cmd, '"\"infobox\" test"', dialog.last_cmd)
-    assert_includes(dialog.last_cmd, ' 24 80', dialog.last_cmd)
+    cmd = dialog.last_cmd
+    assert_includes(cmd, '--infobox', cmd)
+    assert_includes(cmd, '"\"infobox\" test"', cmd)
+    assert_includes(cmd, ' 24 80', cmd)
   end
 
   def test_msgbox
     dialog.msgbox('"msgbox" test', 24, 80)
-    assert_includes(dialog.last_cmd, '"\"msgbox\" test"')
-    assert_includes(dialog.last_cmd, ' 24 80')
+    cmd = dialog.last_cmd
+    assert_includes(cmd, '--msgbox', cmd)
+    assert_includes(cmd, '"\"msgbox\" test"', cmd)
+    assert_includes(cmd, ' 24 80', cmd)
   end
 
   #
