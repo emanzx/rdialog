@@ -11,6 +11,7 @@ class TestMRDialog < Minitest::Test
   def setup
     @dialog = MRDialog.new
     @dialog.dry_run = false
+    @dialog.logger = Logger.new(STDOUT)
   end
 
   def commands
@@ -36,6 +37,14 @@ class TestMRDialog < Minitest::Test
     assert_includes(cmd, '"1" "Item #1" "on" ')
     assert_includes(cmd, '"2" "Item #2" "off" ')
     assert_includes(cmd, '"3" "Item #3" "off" ')
+  end
+
+  def test_calendar
+    dialog.calendar('"calendar" test', 0, 0, 25, 12, 2015)
+    cmd = dialog.last_cmd
+    assert_includes(cmd, '"\"calendar\" test"', cmd)
+    assert_includes(cmd, '0 0 25 12 2015', cmd)
+    assert_includes(cmd, '2> "', cmd)
   end
 
   def test_gauge

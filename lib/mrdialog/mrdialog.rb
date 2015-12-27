@@ -365,7 +365,35 @@ class MRDialog
     tmp.close!
     return selected_tags
   end
-    
+
+  #
+  # A calendar box displays  month,  day  and  year  in  separately adjustable
+  # windows. If the values for day, month or year are missing or negative, the
+  # current date's corresponding values are used. You can increment or decrement
+  # any of those using the left-, up-, right-, and down-arrows. Use vi-style h,
+  # j, k and l for moving around the arrays of days in a month. Use tab or
+  # backtab to move between windows. If the year is given as zero, the current
+  # date is used as an initial value.
+  #
+  # Returns a Date object with the selected date.
+  #
+  def calendar(text="Select a Date", height=0, width=0, day=Date.today.mday(), month=Date.today.mon(), year=Date.today.year())
+    tmp = Tempfile.new('tmp')
+    cmd = [ option_string(),
+      '--calendar',
+      "#{text.inspect} #{height} #{width} #{day} #{month} #{year} 2> #{tmp.path.inspect}" ].join(' ')
+    success = run(cmd)
+    if success
+      date = Date::civil(*tmp.readline.split('/').collect {|i| i.to_i}.reverse)
+      tmp.close!
+      return date
+    else
+      tmp.close!
+      return success
+    end  
+  end
+
+  # 
   # A gauge box displays a meter along the bottom of the box.   The  
   # meter  indicates  the percentage.   New percentages are read from 
   # standard input, one integer per line.  The meter is updated to 
@@ -753,37 +781,6 @@ class MRDialog
 
   ##---- muquit@muquit.com mod ends---
 
-
-  #      A calendar box displays  month,  day  and  year  in  separately
-  #      adjustable  windows.   If the values for day, month or year are
-  #      missing or negative, the current  date's  corresponding  values
-  #      are  used.   You  can increment or decrement any of those using
-  #      the left-, up-, right- and down-arrows.  Use vi-style h,  j,  k
-  #      and  l for moving around the array of days in a month.  Use tab
-  #      or backtab to move between windows.  If the year  is  given  as
-  #      zero, the current date is used as an initial value.
-  #
-  #  Returns a Date object with the selected date
-
-  def calendar(text="Select a Date", height=0, width=0, day=Date.today.mday(), month=Date.today.mon(), year=Date.today.year())
-
-    tmp = Tempfile.new('tmp')
-
-    command = option_string() + "--calendar \"" + text.to_s + 
-      "\" " + height.to_i.to_s + " " + width.to_i.to_s + " " + 
-      day.to_i.to_s + " " + month.to_i.to_s + " " + year.to_i.to_s + 
-      " 2> " + tmp.path
-    success = system(command)
-    if success
-      date = Date::civil(*tmp.readline.split('/').collect {|i| i.to_i}.reverse)
-      tmp.close!
-      return date
-    else
-      tmp.close!
-      return success
-    end  
-    
-  end
 
   # A  checklist  box  is similar to a menu box; there are multiple
   # entries presented in the form of a menu.  Instead  of  choosing
