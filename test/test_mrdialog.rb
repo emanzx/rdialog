@@ -50,6 +50,15 @@ class TestMRDialog < Minitest::Test
   end
 
   def test_checklist
+    items = []
+    items << dialog.list_item(tag: '1', item: 'Item #1', status: true)
+    items << dialog.list_item(tag: '2', item: 'Item #2', status: false)
+    items << dialog.list_item(tag: '3', item: 'Item #3', status: false)
+
+    result = dialog.checklist('"checklist" test', items)
+    cmd = dialog.last_cmd
+
+    assert_equal(['1'], result)  
   end
 
   def test_gauge

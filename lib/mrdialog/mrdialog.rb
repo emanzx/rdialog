@@ -336,15 +336,15 @@ class MRDialog
     tmp = Tempfile.new('dialog') 
     selected_tags = []
 
-    item_list = []
-    items.each { |item| item_list << "#{item[0].inspect} #{item[1].inspect} #{item[2].inspect}" }
-    item_list << '2>' << tmp.path
-    item_list = item_list.join(' ')
+    itemlist = []
+    items.each do |item|
+      itemlist << item.map { |i| "#{i.inspect}" }.join(' ')
+    end
 
     cmd = [ option_string(),
       '--buildlist',
       %Q(#{text.inspect} #{height} #{width} #{listheight} ),
-      item_list ].join(' ')
+      itemlist.join(' '), "2> #{tmp.path.inspect}" ].join(' ')
 
     log_debug "Number of items: #{items.size}"
     #log_debug "Command:\n#{cmd}"
@@ -391,6 +391,48 @@ class MRDialog
       tmp.close!
       return success
     end  
+  end
+
+  #
+  # A checklist box is similar to a **menu** box; there are multiple entries
+  # presented in the form of a menu. Another difference is that you can indicate
+  # which entry is currently selected, by setting its _status_ to `true`.
+  # Instead of choosing one entry among the entries, each entry can be turned on
+  # or off by the user. The initial on/off state of each entry is specified by
+  # _status_.
+  #
+  # Returns an array of selected items.
+  #
+  def checklist(text, items, height=0, width=0, listheight=0)
+    tmp = Tempfile.new('tmp')
+
+    itemlist = []
+    items.each do |item|
+      itemlist << item.map { |i| "#{i.inspect}" }.join(' ')
+    end
+
+    sep = "|"
+    cmd = [ option_string(), '--checklist',
+      "#{text.inspect} #{height} #{width} #{listheight} #{itemlist.join(' ')} 2> #{tmp.path.inspect}" ].join(' ')
+    success = run(cmd)
+    selected_array = []
+    if success
+      selected_string = tmp.readline
+      tmp.close!
+      log_debug "Separator: #{@separator}"
+
+      sep = Shellwords.escape(@separator)
+      a = selected_string.split(/#{sep}/)
+      a.each do |item|
+        log_debug ">> #{item}"
+        selected_array << item if item && item.to_s.length > 0
+      end
+      return selected_array
+    else
+      tmp.close!
+      return success
+    end
+
   end
 
   # 
@@ -585,7 +627,9 @@ class MRDialog
    
 
   def list_item(args={})
-    [ args[:tag], args[:item], args[:status] ? 'on' : 'off' ] 
+    item = [ args[:tag], args[:item], args[:status] ? 'on' : 'off' ] 
+    item << args[:help] if item_help
+    return item
   end
 
   # A  pause  box displays a meter along the bottom of the box.  The
@@ -782,59 +826,6 @@ class MRDialog
   ##---- muquit@muquit.com mod ends---
 
 
-  # A  checklist  box  is similar to a menu box; there are multiple
-  # entries presented in the form of a menu.  Instead  of  choosing
-  # one entry among the entries, each entry can be turned on or off
-  # by the user.  The initial on/off state of each entry is  speci-
-  # fied by status.
-  # return an array of selected items
-  def checklist(text, items, height=0, width=0, listheight=0)
-    
-    tmp = Tempfile.new('tmp')
-
-    itemlist = String.new
-
-    for item in items
-      if item[2]
-        item[2] = "on"
-      else
-        item[2] = "off"
-      end
-      itemlist += "\"" + item[0].to_s + "\" \"" + item[1].to_s + 
-      "\" " + item[2] + " "
-
-      if @itemhelp
-        itemlist += "\"" + item[3].to_s + "\" "
-      end
-    end
-
-    sep = "|"
-    command = option_string() + "--checklist \"" + text.to_s +
-                        "\" " + height.to_i.to_s + " " + width.to_i.to_s +
-      " " + listheight.to_i.to_s + " " + itemlist + "2> " +
-      tmp.path 
-      log_debug "Command:\n#{command}"
-    success = system(command)
-  selected_array = []
-    if success
-      selected_string = tmp.readline
-      tmp.close!
-      log_debug "Separator: #{@separator}"
-
-      sep = Shellwords.escape(@separator)
-      a = selected_string.split(/#{sep}/)
-      a.each do |item|
-        log_debug ">> #{item}"
-        selected_array << item if item && item.to_s.length > 0
-      end
-      return selected_array
-    else
-      tmp.close!
-      return success
-    end
-
-  end
-
   #      The file-selection dialog displays a text-entry window in which
   #      you can type a filename (or directory), and above that two win-
   #      dows with directory names and filenames.
@@ -916,7 +907,7 @@ class MRDialog
       itemlist += "\"" + item[0].to_s + "\" \"" + item[1].to_s +
       "\" " + item[2] + " "
 
-      if @itemhelp
+      if @item_help
         itemlist += "\"" + item[3].to_s + "\" "
       end
     end
@@ -961,7 +952,7 @@ class MRDialog
     for item in items
       itemlist += "\"" + item[0].to_s + "\" \"" + item[1].to_s +  "\" "
 
-      if @itemhelp
+      if @item_help
               itemlist += "\"" + item[2].to_s + "\" "
       end
     end
