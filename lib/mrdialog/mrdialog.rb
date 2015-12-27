@@ -432,7 +432,46 @@ class MRDialog
       tmp.close!
       return success
     end
+  end
 
+  # 
+  # The directory-selection dialog displays a text-entry window in which you can
+  # type a directory, and above that a windows with directory names.
+  #
+  # Here **filepath** can be a filepath in which case the directory window will
+  # display the contents of the path and the text-entry window will contain the
+  # preselected directory.
+  #
+  # Use tab or arrow keys to move between the windows. Within the directory
+  # window, use the up/down arrow keys to scroll the current selection. Use the
+  # space-bar to copy the current selection into the text-entry window.
+  #
+  # Typing any printable characters switches focus to the text-entry window,
+  # entering that character as well as scrolling the directory window to the
+  # closest match.
+  #
+  # Use a carriage return or the "OK" button to accept the current value in the
+  # text-entry window and exit.
+  #
+  # On exit, returns the contents of the text-entry window.
+  #
+  def dselect(filepath, height=0, width=0)
+    tmp = Tempfile.new('tmp')
+
+    cmd = [ option_string(), '--dselect',
+      "#{filepath.inspect} #{height} #{width} 2> #{tmp.path.inspect}" ].join(' ')
+    if run(cmd)
+      begin
+        selected_string = tmp.readline
+      rescue EOFError
+        selected_string = ''
+      end
+      tmp.close!
+      return selected_string
+    else
+      tmp.close!
+      return success
+    end
   end
 
   # 
@@ -846,17 +885,13 @@ class MRDialog
   #      Use a carriage return or the "OK" button to accept the  current
   #      value in the text-entry window and exit.
 
-  def fselect(path, height=0, width=0)
+  def fselect(filepath, height=0, width=0)
     tmp = Tempfile.new('tmp')
 
-    command = option_string() + "--fselect \"" + path.to_s +
-    "\" " + height.to_i.to_s + " " + width.to_i.to_s + " "
+    cmd = [ option_string(), '--fselect',
+      "#{filepath.inspect}, #{height} #{width} 2> #{tmp.path.inspect}" ].join(' ')
 
-    command += "2> " + tmp.path
-
-    success = system(command)
-
-    if success
+    if run(cmd)
       begin
         selected_string = tmp.readline
       rescue EOFError

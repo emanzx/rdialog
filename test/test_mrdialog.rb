@@ -61,6 +61,22 @@ class TestMRDialog < Minitest::Test
     assert_equal(['1'], result)  
   end
 
+  def test_dselect
+    result = dialog.dselect(__FILE__, 0, 0)
+    cmd = dialog.last_cmd
+    assert_equal('test_mrdialog.rb', result, cmd)
+    assert_includes(cmd, '--dselect')
+    assert_includes(cmd, __FILE__, cmd)
+    assert_includes(cmd, '0 0', cmd)
+  end
+
+  def test_fselect
+    dir = File.dirname(__FILE__)
+    result = dialog.fselect(dir, 0, 0)
+    cmd = dialog.last_cmd
+    assert_equal('.,', result, cmd)
+  end
+
   def test_gauge
     dialog.gauge('"gauge" test', 24, 80, 0) do |f|
       1.upto(100) do |a|
