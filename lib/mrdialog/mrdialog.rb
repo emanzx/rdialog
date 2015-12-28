@@ -859,6 +859,7 @@ class MRDialog
   # 'k' and 'j', or arrow-keys. Scroll left/right using vi-style 'h' and 'l' or
   # arrow-keys. A '0' resets the left/right scrolling. For more convenience, vi-
   # style forward and backward searching functions are also provided.
+  #
   def textbox(file, height=0, width=0)
     run([ option_string(), '--textbox', file.inspect, height, width ].join(' '))
   end
@@ -931,29 +932,9 @@ class MRDialog
   # pause. The  pause  exits  when  timeout is reached or the user
   # presses the OK button (status OK) or the user presses the CANCEL
   # button or Esc key.
-  def pause(text="Text Goes Here", height=0, width=0, secs=10)
-    cmd = [ option_string(), '--pause',
-      text.inspect, height, width, secs ].join(' ')
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--pause"
-    cmd << " "
-    cmd << '"'
-    cmd << text
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    cmd << " "
-    cmd << secs.to_s
-    log_debug "Command:\n#{cmd}"
-
-    system(cmd)
-    result = ''
-    @exit_code = $?.exitstatus
-    log_debug "Exit code: #{exit_code}"
+  def pause(text, secs, height=0, width=0)
+    run([ option_string(), '--pause',
+      text.inspect, height, width, secs ].join(' '))
   end
 
 

@@ -166,6 +166,14 @@ class TestMRDialog < Minitest::Test
     assert_includes(cmd, ' 24 80', cmd)
   end
 
+  def test_pause
+    dialog.title = 'PAUSE'
+    dialog.pause('"Pause" Test', 2, 10, 30)
+    cmd = dialog.last_cmd
+    assert_includes(cmd, '--pause')
+    assert_includes(cmd, '"\"Pause\" Test" 10 30 2', cmd)
+  end
+
   def test_prgbox
     dialog.title = 'PRGBOX'
     command = 'ls'#;File.expand_path('shortlist', File.dirname(__FILE__))
