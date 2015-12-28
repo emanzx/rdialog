@@ -725,56 +725,16 @@ class MRDialog
   end
 
 
-  # Progressbox is used to display the piped output of a command.  
-  # After  the  command completes,  the  user can press the ENTER key so 
-  # that dialog will exit and the calling shell script can continue its operation.
-  # If three parameters are given, it displays the text under the title,
-  # delineated  from the  scrolling  file's contents.  If only two 
-  # parameters are given, this text is omitted.
-  # 
-  # The caller will write the progress string on stdout in a block
-  # and will pass the block to the method. Please look at samples/
-  # progress.rb for an example.
-  # Author: muquit@muquit.com Apr-02-2014 
-  def progressbox(description='', height=0, width=0)
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--progressbox"
-    cmd << " "
-    if description.length > 0
-      cmd << '"'
-      cmd << description
-      cmd << '"'
-    end
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    
-    log_debug("Command\n#{cmd}")
-    IO.popen(cmd, "w") {|fh| yield fh}
-  end
-
-  # same as progressbox but displays OK button at the end
-  def programbox(description='', height=0, width=0)
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--programbox"
-    cmd << " "
-    if description.length > 0
-      cmd << '"'
-      cmd << description
-      cmd << '"'
-    end
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    
-    log_debug("Command\n#{cmd}")
-    IO.popen(cmd, "w") {|fh| yield fh}
+  #
+  # A message box is very similar to a yes/no box.  The  only  dif-
+  # ference  between  a message box and a yes/no box is that a mes-
+  # sage box has only a single OK button.  You can use this  dialog
+  # box  to  display  any message you like.  After reading the mes-
+  # sage, the user can press the ENTER key so that dialog will exit
+  # and the calling shell script can continue its operation.
+  #
+  def msgbox(text="Text Goes Here", height=0, width=0)
+    run [ option_string, '--msgbox', %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
   end
 
   #
@@ -792,28 +752,134 @@ class MRDialog
   # two parameters are given, this text is omitted.
   #
   def prgbox(command, height=0, width=0, text='')
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--prgbox"
-    cmd << " "
-    if text.length > 0
-      cmd << '"'
-      cmd << text
-      cmd << '"'
-    end
-    cmd << " "
-    cmd << '"'
-    cmd << command
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    system(cmd)
-    @exit_code = $?.exitstatus
+    cmd = [ option_string(), '--prgbox' ]
+    cmd << text.inspect unless text.empty?
+    cmd << command.inspect << height << width
+    cmd = cmd.join(' ')
+    run(cmd)
   end
 
+  # same as progressbox but displays OK button at the end
+  def programbox(description='', height=0, width=0)
+    cmd = [ option_string(), '--programbox' ]
+    cmd << description.inspect unless description.empty?
+    cmd << height << width
+    cmd = cmd.join(' ')
+    run(cmd) { |fh| yield fh }
+  end
+
+  #
+  # Progressbox is used to display the piped output of a command.  
+  # After  the  command completes,  the  user can press the ENTER key so 
+  # that dialog will exit and the calling shell script can continue its operation.
+  # If three parameters are given, it displays the text under the title,
+  # delineated  from the  scrolling  file's contents.  If only two 
+  # parameters are given, this text is omitted.
+  # 
+  # The caller will write the progress string on stdout in a block
+  # and will pass the block to the method. Please look at samples/
+  # progress.rb for an example.
+  # Author: muquit@muquit.com Apr-02-2014 
+  #
+  def progressbox(description='', height=0, width=0)
+    cmd = [ option_string(), '--progressbox' ]
+    cmd << description.inspect unless description.empty?
+    cmd << height << width
+    cmd = cmd.join(' ')
+    run(cmd) { |fh| yield fh }
+  end
+
+  #
+  # A **radiolist** box is similar to a **menu** box. The only difference is
+  # that you can indicate which entry is currently selected by settings its
+  # `status` to `on`.
+  #
+  # Returns the `tag` of the selected item.
+  #
+  def radiolist(text, items, height=0, width=0, listheight=0)
+    tmp = Tempfile.new('tmp')
+    items.map!{|item| item.map{|i| i.inspect}.join(' ')}
+    cmd = [ option_string(), '--radiolist',
+      text.inspect, height, width, listheight, items, '2>', tmp.path.inspect ].join(' ')
+    success = run(cmd)
+
+    if success
+      selected_string = tmp.readline
+      tmp.close!
+      return selected_string
+    else
+      tmp.close!
+      return success
+    end
+
+  end
+
+  #
+  # Display text from a file in a dialog box, as in a "tail -f" command. Scroll
+  # left/right using vi-style 'h' and 'l', or arrow-keys. A '0' resets the
+  # scrolling.
+  #
+  def tailbox(file, height=0, width=0)
+    run([ option_string(), '--tailbox', file.inspect, height, width ].join(' '))
+  end
+
+  #
+  # Display text from a file in a dialog box as a background task, as in a
+  # "tail -f &" command. Scroll left/right using vi-styl 'h' and 'l', or arrow-
+  # keys. A '0' resets the scrolling.
+  #
+  # Dialog treats the background task specially if there are other widgets
+  # (`--and-widget`) on the screen concurrently. Until those widgets are closed
+  # (e.g., an "OK"), **dialog** will perform all of the tailboxbg widgets in the
+  # same process, polling for updates. You may use a tab to traverse between the
+  # widgets on the screen, and close them individually, e.g. by pressing "Enter".
+  # Once the non-tailboxbg widgets are closed, **dialog** forks a copy of itself
+  # into the background, and prints its process id if the `--no-kill` option is
+  # given.
+  #
+  def tailboxbg(file, height=0, width=0)
+    run([ option_string(), '--tailboxbg', file.inspect, height, width ].join(' '))
+  end
+
+  #
+  # A **text** box lets you display the contents of a text file in a dialog box.
+  # It is like a simple text file viewer. The user can move through the file by
+  # using the cursor, page-up, page-down and **HOME/END** keys available on most
+  # keyboards. If the lines are too long to be displayed in the box, the **LEFT/
+  # RIGHT** keys can be used to scroll the text region horizontally. You may
+  # also use vi-style keys h, j, k, and l in place of the cursor keys, and B or
+  # N in place ofthe page-up and page-down keys. Scroll up/down using vi-style 
+  # 'k' and 'j', or arrow-keys. Scroll left/right using vi-style 'h' and 'l' or
+  # arrow-keys. A '0' resets the left/right scrolling. For more convenience, vi-
+  # style forward and backward searching functions are also provided.
+  def textbox(file, height=0, width=0)
+    run([ option_string(), '--textbox', file.inspect, height, width ].join(' '))
+  end
+
+  # A dialog is displayed which allows you to select hour, minute and second.
+  # If the values for hour, minute or second are missing or negative, the
+  # current date's  corresponding values are used. You can increment or
+  # decrement any of those using the left-, up-, right- and down-arrows. Use
+  # tab or backtab to move between windows.
+  #
+  # Returns a Time object.
+  #
+  def timebox(text, height=0, width=0, time=Time.now)
+    tmp = Tempfile.new('tmp')
+    cmd = [ option_string(), '--timebox',
+      text.inspect, height, width, time.hour, time.min, time.sec,
+      '2>', tmp.path.inspect ].join(' ')
+    success = run(cmd)
+    if success
+      time = Time.parse(tmp.readline)
+      tmp.close!
+      return time
+    else
+      tmp.close!
+      return success
+    end
+    
+  end
   # 
   # Display data organized as a tree.  Each group of data contains a
   # tag, the text to display for  the  item,  its  status  ("on"  or
@@ -826,55 +892,12 @@ class MRDialog
   # output.
   def treeview(text="Text Goes Here", items=nil, height=0, width=0, listheight=0)
     tmp = Tempfile.new('dialog') 
-    itemlist = ''
-    items.each do |item|
-      itemlist << '"' 
-      itemlist << item[0].to_s
-      itemlist << '"'
-      itemlist << " "
-      itemlist << '"'
-      itemlist << item[1].to_s
-      itemlist << '"'
-      itemlist << " "
-      itemlist << '"'
-      if item[2]
-        item[2] = "on"
-      else
-        item[2] = "off"
-      end
-      itemlist << item[2]
-      itemlist << '"'
-      itemlist << " "
-      itemlist << item[3].to_s
-      itemlist << " "
-    end
-    itemlist << "2>"
-    itemlist << tmp.path
-
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--treeview"
-    cmd << " "
-    cmd << '"'
-    cmd << " "
-    cmd << text
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    cmd << " "
-    cmd << listheight.to_s
-    cmd << " "
-    cmd << itemlist
-
+    items.map!{|item| item.map{|i| i.inspect}}.join(' ')
+    cmd = [ option_string(), '--treeview',
+      text.inspect, height, width, listheight, items,
+      '2>', tmp.path.inspect ].join(' ')
     log_debug "Number of items: #{items.size}"
-    log_debug "Command:\n#{cmd}"
-
-    system(cmd)
-    @exit_code = $?.exitstatus
-    log_debug "Exit code: #{exit_code}"
+    run(cmd)
     tag = ''
     if @exit_code == 0
       tag = tmp.read
@@ -890,12 +913,20 @@ class MRDialog
     return item
   end
 
+  def tree_item(args={})
+    item = [ args[:tag], args[:item], args[:status] ? 'on' : 'off', args[:depth] ]
+    item << args[:help] if item_help
+    return item
+  end
+
   # A  pause  box displays a meter along the bottom of the box.  The
   # meter indicates how many seconds remain until  the  end  of  the
   # pause. The  pause  exits  when  timeout is reached or the user
   # presses the OK button (status OK) or the user presses the CANCEL
   # button or Esc key.
   def pause(text="Text Goes Here", height=0, width=0, secs=10)
+    cmd = [ option_string(), '--pause',
+      text.inspect, height, width, secs ].join(' ')
     cmd = ""
     cmd << option_string()
     cmd << " "
@@ -949,59 +980,6 @@ class MRDialog
 
 
 
-  #      A  radiolist box is similar to a menu box.  The only difference
-  #      is that you can indicate which entry is currently selected,  by
-  #      setting its status to true.
-
-  def radiolist(text, items, height=0, width=0, listheight=0)
-
-    tmp = Tempfile.new('tmp')
-
-    itemlist = String.new
-
-    for item in items
-      if item[2]
-        item[2] = "on"
-      else
-        item[2] = "off"
-      end
-      itemlist += "\"" + item[0].to_s + "\" \"" + item[1].to_s +
-      "\" " + item[2] + " "
-
-      if @item_help
-        itemlist += "\"" + item[3].to_s + "\" "
-      end
-    end
-
-    command = option_string() + "--radiolist \"" + text.to_s +
-            "\" " + height.to_i.to_s + " " + width.to_i.to_s +
-            " " + listheight.to_i.to_s + " " + itemlist + "2> " +
-            tmp.path
-    log_debug("Command:\n#{command}")
-    success = system(command)
-
-    if success
-      selected_string = tmp.readline
-      tmp.close!
-      return selected_string
-    else
-      tmp.close!
-      return success
-    end
-
-  end
-
-  #
-  # A message box is very similar to a yes/no box.  The  only  dif-
-  # ference  between  a message box and a yes/no box is that a mes-
-  # sage box has only a single OK button.  You can use this  dialog
-  # box  to  display  any message you like.  After reading the mes-
-  # sage, the user can press the ENTER key so that dialog will exit
-  # and the calling shell script can continue its operation.
-  #
-  def msgbox(text="Text Goes Here", height=0, width=0)
-    run [ option_string, '--msgbox', %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
-  end
 
   #      A password box is similar to an input box, except that the text
   #      the user enters is not displayed.  This is useful when  prompt-
@@ -1039,81 +1017,6 @@ class MRDialog
     end
   end
 
-  #     The textbox method handles three similar dialog functions, textbox,
-  #     tailbox, and tailboxbg. They are activated by setting type to
-  #     "text", "tail", and "bg" respectively
-  #
-  #     Textbox mode:
-  #  A  text  box  lets you display the contents of a text file in a
-  #  dialog box.  It is like a simple text file  viewer.   The  user
-  #  can  move  through  the file by using the cursor, PGUP/PGDN and
-  #  HOME/END keys available on most keyboards.  If  the  lines  are
-  #  too long to be displayed in the box, the LEFT/RIGHT keys can be
-  #  used to scroll the text region horizontally.  You may also  use
-  #  vi-style  keys h, j, k, l in place of the cursor keys, and B or
-  #  N in place of the pageup/pagedown keys.  Scroll  up/down  using
-  #  vi-style  'k'  and 'j', or arrow-keys.  Scroll left/right using
-  #  vi-style  'h'  and  'l',  or  arrow-keys.   A  '0'  resets  the
-  #  left/right  scrolling.   For more convenience, vi-style forward
-  #  and backward searching functions are also provided.
-  #
-  #     Tailbox mode:
-  #  Display text from a file in a dialog box, as  in  a  "tail  -f"
-  #  command.   Scroll  left/right  using  vi-style  'h' and 'l', or
-  #  arrow-keys.  A '0' resets the scrolling.
-  #
-  #     Tailboxbg mode:
-  #  Display text from a file in a dialog box as a background  task,
-  #  as  in a "tail -f &" command.  Scroll left/right using vi-style
-  #  'h' and 'l', or arrow-keys.  A '0' resets the scrolling.
-
-  def textbox(file, type="text", height=0, width=0)
-    case type
-      when "text"
-        opt = "--textbox"
-      when "tail"
-        opt = "--tailbox"
-      when "bg"
-        opt = "--textboxbg"
-    end
-
-    command = option_string() + opt +" \"" + file.to_s +
-                "\" " + height.to_i.to_s + " " + width.to_i.to_s + " "
-    
-    success = system(command)
-
-    return success
-  end
-
-    #      A dialog is displayed which allows you to select  hour,  minute
-    #      and second.  If the values for hour, minute or second are miss-
-    #      ing or negative, the current date's  corresponding  values  are
-    #      used.   You  can  increment or decrement any of those using the
-    #      left-, up-, right- and down-arrows.  Use tab or backtab to move
-    #      between windows.
-    #
-    #      On  exit, a Time object is returned.
-
-##-    def timebox(file, type="text", height=0, width=0, time=Time.now)
-    def timebox(text, height=0, width=0, time=Time.now)
-      tmp = Tempfile.new('tmp')
-
-      command = option_string() + "--timebox \"" + text.to_s +
-              "\" " + height.to_i.to_s + " " + width.to_i.to_s + " " +
-      time.hour.to_s + " " + time.min.to_s + " " + 
-      time.sec.to_s + " 2> " + tmp.path
-      log_debug("Command:\n#{command}")
-      success = system(command)
-      if success
-        time = Time.parse(tmp.readline)
-        tmp.close!
-        return time
-      else
-        tmp.close!
-        return success
-      end
-    
-  end
 
     #      A yes/no dialog box of size height rows by width  columns  will
     #      be displayed.  The string specified by text is displayed inside
