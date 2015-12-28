@@ -265,6 +265,17 @@ class TestMRDialog < Minitest::Test
     assert_includes(cmd, '--treeview')
   end
 
+  def test_yesno
+    dialog.title = 'YESNO'
+    result = dialog.yesno('Is ENQ?')
+    cmd = dialog.last_cmd
+    assert result
+    assert_includes(cmd, '--yesno') 
+    dialog.defaultno = true
+    result = dialog.yesno('Is ENQ not?')
+    refute result
+  end
+
   #
   # Options 
   # 

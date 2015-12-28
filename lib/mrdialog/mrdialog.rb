@@ -927,11 +927,12 @@ class MRDialog
     return item
   end
 
-  # A  pause  box displays a meter along the bottom of the box.  The
-  # meter indicates how many seconds remain until  the  end  of  the
-  # pause. The  pause  exits  when  timeout is reached or the user
-  # presses the OK button (status OK) or the user presses the CANCEL
-  # button or Esc key.
+  #
+  # A pause  box displays a meter along the bottom of the box. The meter 
+  # indicates how many seconds remain until the end of the pause. The pause
+  # exits when timeout is reached or the user presses the OK button (status OK)
+  # or the user presses the CANCEL button or Esc key.
+  #
   def pause(text, secs, height=0, width=0)
     run([ option_string(), '--pause',
       text.inspect, height, width, secs ].join(' '))
@@ -950,7 +951,7 @@ class MRDialog
     item_size = items[0].size
     log_debug "Item size:#{item_size}"
     if item_size == 9
-        return form(text, items, height, width, formheight)
+      return form(text, items, height, width, formheight)
     end
     return nil
   end
@@ -1005,43 +1006,21 @@ class MRDialog
     end
   end
 
-
-    #      A yes/no dialog box of size height rows by width  columns  will
-    #      be displayed.  The string specified by text is displayed inside
-    #      the dialog box.  If this string is too long to fit in one line,
-    #      it  will be automatically divided into multiple lines at appro-
-    #      priate places.  The text string can also contain the sub-string
-    #      "\n"  or  newline  characters  '\n'  to  control  line breaking
-    #      explicitly.  This dialog box is  useful  for  asking  questions
-    #      that  require  the user to answer either yes or no.  The dialog
-    #      box has a Yes button and a No button, in  which  the  user  can
-    #      switch between by pressing the TAB key.
-
-  # changing --inputbox to --yesno
-  #  muquit@muquit.com Apr-01-2014 
-  def yesno(text="Please enter some text", height=0, width=0)
-#    command = option_string() + "--inputbox \"" + text.to_s +
-#                "\" " + height.to_i.to_s + " " + width.to_i.to_s
-
-    command = ""
-    command << option_string();
-    command << " "
-    command << '"'
-    command << "--yesno"
-    command << '"'
-    command << " "
-    command << '"'
-    command << text
-    command << '"'
-    command << " "
-    command << height.to_s
-    command << " "
-    command << width.to_s
-
-
-    log_debug("Command:\n#{command}")
-    success = system(command)
-    return success
+  #
+  # A **yes/no** dialog box of size `height` rows by `width` columns will be
+  # displayed. The string specified by `text` is displayed inside the dialog 
+  # box. If this string is too long to fit in one line, it will be automatically
+  # divided into multiple lines at appropriate places. The `text` string can
+  # also contain the sub-string "`\n`" or newline characters `\n` to control
+  # line breaking explicitly. This dialog box is useful for asking questions
+  # that require the user to answer either yes or no. The dialog box has a
+  # **Yes** button and a **No** button, in which the user can switch between
+  # by pressing the _TAB_ key.
+  #
+  # Returns the exit code.
+  #
+  def yesno(text, height=0, width=0)
+    return run([ option_string(), '--yesno', text.inspect, height, width ].join(' '))
   end
 
   private  
