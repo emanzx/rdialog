@@ -474,6 +474,138 @@ class MRDialog
     end
   end
 
+  #
+  # The edit-box dialog displays a copy of the file. You may edit it using the
+  # _backspace_, _delete_ and cursor keys to correct typing errors. It also 
+  # recognizes pageup/pagedown. Unlike the `--inputbox`, you must tab to the
+  # "OK" or "Cancel" buttons to close the dialog. Pressing the "Enter" key
+  # within the box will split the corresponding line.
+  #
+  # Returns the contents of the window.
+  #
+  def editbox(filepath, height=0, width=0)
+    tmp = Tempfile.new('dialog') 
+
+    cmd = [ option_string(), '--editbox', 
+      filepath.inspect, height, width, '2>', tmp.path.inspect ].join(' ')
+
+    run(cmd)
+    result = ''
+    if @exit_code == 0
+      result = tmp.read
+      log_debug(result)
+    end
+    tmp.close!
+    return result
+  end
+
+  #
+  # The **form** dialog displays a form consisting of labels and fields, which
+  # are positioned on a scrollable window by coordinates given in the scripts.
+  # The field length `flen` and input-length `ilen` tell how long the field can
+  # be. The former defines the length shown for a selected field, while the
+  # latter defines the permissible length of the data entered in the field.
+  #
+  # * If `flen` is zero, the corresponding field cannot be altered and the
+  #   contents of the field determine the displayed-length.
+  #
+  # * If `flen` is negative, the corresponding field cannot be altered and the
+  #   negated value of `flen` is used as the displayed-length.
+  #
+  # * If `ilen` is zero, it is set to `flen`.
+  #
+  # Use up/down arrows (or control/N, control/P) to move between fields. Use tab
+  # to move between windows.
+  #
+  # Returns the contents of the form-fields in a Hash.
+  #
+  def form(text, items, height=0, width=0, formheight=0)
+    res_hash = {}
+    tmp = Tempfile.new('dialog') 
+    mixed_form = false
+    item_size = items[0].size
+    log_debug "Item size:#{item_size}"
+    # if there are 9 elements, it's a mixedform
+    if item_size == 9
+        mixed_form = true
+    end
+    itemlist = []
+    items.each do |item|
+      itemlist << item.map {|i| i.inspect}.join(' ')
+    end
+
+    box = '--form'
+    if mixed_form
+      box = '--mixedform'
+    else
+      box = '--passwordform' if password_form
+    end
+
+    cmd = [ option_string(), box, 
+      text.inspect, height, width, formheight, itemlist.join(' '), '2>', tmp.path.inspect ].join(' ')
+
+    log_debug("Number of items: #{items.size}")
+    run(cmd)
+
+    if exit_code == 0
+      lines = tmp.readlines
+      lines.each_with_index do |val, idx|
+        key = items[idx][0]
+        res_hash[key] = val.chomp
+      end
+    end
+
+    tmp.close!
+    return res_hash
+  end
+
+  def form_item(args={})
+    item = [ args[:label], args[:ly], args[:lx], 
+      args[:item], args[:iy], args[:ix], args[:flen], args[:ilen] ]
+    item << args[:itype] if args[:itype]
+    return item.to_a
+  end
+
+  #      The file-selection dialog displays a text-entry window in which
+  #      you can type a filename (or directory), and above that two win-
+  #      dows with directory names and filenames.
+
+  #      Here  filepath  can  be  a  filepath in which case the file and
+  #      directory windows will display the contents of the path and the
+  #      text-entry window will contain the preselected filename.
+  #
+  #      Use  tab or arrow keys to move between the windows.  Within the
+  #      directory or filename windows, use the up/down  arrow  keys  to
+  #      scroll  the  current  selection.  Use the space-bar to copy the
+  #      current selection into the text-entry window.
+  #
+  #      Typing any printable characters switches  focus  to  the  text-
+  #      entry  window, entering that character as well as scrolling the
+  #      directory and filename windows to the closest match.
+  #
+  #      Use a carriage return or the "OK" button to accept the  current
+  #      value in the text-entry window and exit.
+  def fselect(filepath, height=0, width=0)
+    tmp = Tempfile.new('tmp')
+
+    cmd = [ option_string(), '--fselect',
+      "#{filepath.inspect}, #{height} #{width} 2> #{tmp.path.inspect}" ].join(' ')
+
+    if run(cmd)
+      begin
+        selected_string = tmp.readline
+      rescue EOFError
+        selected_string = ""
+      end
+      tmp.close!
+      return selected_string
+    else
+      tmp.close!
+      return success
+    end
+  end
+
+
   # 
   # A gauge box displays a meter along the bottom of the box.   The  
   # meter  indicates  the percentage.   New percentages are read from 
@@ -503,6 +635,93 @@ class MRDialog
       '--gauge',
       %Q(#{text.inspect} #{height} #{width} #{percent}) ].join(' ')
     run(cmd) { |fh| yield fh }
+  end
+
+  #
+  # An info box is basically a message box.  However, in this case,
+  # dialog  will  exit  immediately after displaying the message to
+  # the user.  The screen is not cleared when dialog exits, so that
+  # the  message  will remain on the screen until the calling shell
+  # script clears it later.  This is useful when you want to inform
+  # the  user that some operations are carrying on that may require
+  # some time to finish.
+  #
+  # Returns false if esc was pushed
+  #
+  def infobox(text, height=0, width=0)
+    run [ option_string(), 
+      '--infobox', 
+      %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
+  end
+
+  #
+  # An **input** box is useful when you want to ask questions that require the
+  # user to input a string as the answer. If init is is supplied it is used to
+  # initialize the input string. When entering the string, the backspace, delete
+  # and cursor keys can be used to correct typing errors. If the input string is
+  # longer than can fit in the dialog box, the input field will be scrolled.
+  #
+  # Returns the input string.
+  #
+  def inputbox(text, init='', height=0, width=0)
+    tmp = Tempfile.new('tmp')
+
+    cmd = [ option_string(), '--inputbox',
+      text.inspect, height, width, init.inspect, '2>', tmp.path.inspect ].join(' ')
+
+    success = run(cmd)
+    if success
+      begin
+        selected_string = tmp.readline
+      rescue EOFError
+        selected_string = ""
+      end
+      tmp.close!      
+      return selected_string
+    else
+      tmp.close!
+      return success
+    end
+  end
+
+  #
+  # As its name suggests, a **menu** box is a dialog box that can be used to
+  # present a list of choices in the form of a menu for the user to choose.
+  # Choices are displayed in the order given. Each menu entry consists of a
+  # `tag` string and an `item` string. The `tag` gives the entry a name to
+  # distinguish it from the other entries in the menu. The `item` is a short
+  # description of the option that the entry represents. The user can move
+  # between the menu entries by pressing the cursor keys, the first letter of
+  # the `tag` as a hot-key, or the number keys `1` through `9`. There are
+  # `menu-height` entries displayed in the menu at one time, but the menu will
+  # be scrolled if there are more entries than that.
+  #
+  # Returns a string containing the tag of the chosen menu entry.
+  #
+  def menu(text, items, height=0, width=0, listheight=0)
+    tmp = Tempfile.new('tmp')
+
+    items.map!{|item| item.map{|i| i.inspect}}.join(' ')
+    cmd = [ option_string(), '--menu',
+      text.inspect, height, width, listheight, items, '2>', tmp.path.inspect ].join(' ')
+
+    success = run(cmd)
+
+    if success
+      selected_string = tmp.readline
+      tmp.close!
+      return selected_string
+    else
+      tmp.close!
+      return success
+    end
+
+  end
+
+  def menu_item(args={})
+    item = [ args[:tag], args[:item] ]
+    item << args[:help] if item_help
+    return item
   end
 
 
@@ -699,143 +918,6 @@ class MRDialog
     log_debug "Exit code: #{exit_code}"
   end
 
-  # The edit-box dialog displays a copy of the file.  You  may  edit
-  # it using the backspace, delete and cursor keys to correct typing
-  # errors.  It also recognizes pageup/pagedown.  Unlike  the  --in-
-  # putbox,  you  must  tab to the "OK" or "Cancel" buttons to close
-  # the dialog.  Pressing the "Enter" key within the box will  split
-  # the corresponding line.
-  # 
-  # On exit, the contents of the edit window are written to dialog's
-  # output.
-  def editbox(filepath, height=0, width=0)
-    tmp = Tempfile.new('dialog') 
-
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    cmd << "--editbox"
-    cmd << " "
-    cmd << '"'
-    cmd << filepath
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    cmd << " "
-    cmd << "2>"
-    cmd << tmp.path
-
-    log_debug "Command:\n#{cmd}"
-
-    system(cmd)
-    result = ''
-    @exit_code = $?.exitstatus
-    log_debug "Exit code: #{exit_code}"
-    if @exit_code == 0
-      result = tmp.read
-    end
-    tmp.close!
-    return result
-  end
-
-  #
-  # form/mixedform dialog
-  # A form dialog displays a form consisting of labels and fields, 
-  # which are positioned on a scrollable window by coordinates given in 
-  # the script.  The field length flen  and input-length ilen tell how 
-  # long the field can be.  The former defines the length shown for a 
-  # selected field, while the latter defines the permissible length of 
-  # the data  entered in the field.  
-  # The caller is responsile to create the items properly. Please
-  # look at samples/form.rb for an example
-  #
-  # return a hash. keys are the labels
-  # Author:: muquit@muquit.com 
-  def form(text, items, height=0, width=0, formheight=0)
-    res_hash = {}
-    tmp = Tempfile.new('dialog') 
-    itemlist = ''
-    mixed_form = false
-    item_size = items[0].size
-    log_debug "Item size:#{item_size}"
-    # if there are 9 elements, it's a mixedform
-    if item_size == 9
-        mixed_form = true
-    end
-    items.each do |item|
-      itemlist << '"'
-      itemlist << item[0].to_s
-      itemlist << '"'
-      itemlist << " "
-      itemlist << item[1].to_s
-      itemlist << " "
-      itemlist << item[2].to_s
-      itemlist << " "
-      itemlist << '"'
-      itemlist << item[3].to_s
-      itemlist << '"'
-      itemlist << " "
-      itemlist << item[4].to_s
-      itemlist << " "
-      itemlist << item[5].to_s
-      itemlist << " "
-      itemlist << item[6].to_s
-      itemlist << " "
-      itemlist << item[7].to_s
-      itemlist << " "
-      if mixed_form
-          itemlist << item[8].to_s
-          itemlist << " "
-      end
-    end
-    itemlist << " "
-    itemlist << "2>"
-    itemlist << tmp.path
-
-    cmd = ""
-    cmd << option_string()
-    cmd << " "
-    if mixed_form
-      cmd << "--mixedform"
-    else
-      if @password_form
-        cmd << "--passwordform"
-      else
-        cmd << "--form"
-      end
-    end
-    cmd << " "
-    cmd << '"'
-    cmd << text
-    cmd << '"'
-    cmd << " "
-    cmd << height.to_s
-    cmd << " "
-    cmd << width.to_s
-    cmd << " "
-    cmd << formheight.to_s
-    cmd << " "
-    cmd << itemlist
-
-    log_debug("Number of items: #{items.size}")
-    log_debug("Command:\n#{cmd}")
-    system(cmd)
-    @exit_code = $?.exitstatus
-    log_debug "Exit code: #{exit_code}"
-
-    if @exit_code == 0
-      lines = tmp.readlines
-      lines.each_with_index do |val, idx|
-          key = items[idx][0]
-          res_hash[key] = val.chomp
-      end
-    end
-
-    tmp.close!
-    return res_hash
-  end
 
   #
   # A mixedform dialog displays a form consisting of labels and fields,  
@@ -865,63 +947,7 @@ class MRDialog
   ##---- muquit@muquit.com mod ends---
 
 
-  #      The file-selection dialog displays a text-entry window in which
-  #      you can type a filename (or directory), and above that two win-
-  #      dows with directory names and filenames.
 
-  #      Here  filepath  can  be  a  filepath in which case the file and
-  #      directory windows will display the contents of the path and the
-  #      text-entry window will contain the preselected filename.
-  #
-  #      Use  tab or arrow keys to move between the windows.  Within the
-  #      directory or filename windows, use the up/down  arrow  keys  to
-  #      scroll  the  current  selection.  Use the space-bar to copy the
-  #      current selection into the text-entry window.
-  #
-  #      Typing any printable characters switches  focus  to  the  text-
-  #      entry  window, entering that character as well as scrolling the
-  #      directory and filename windows to the closest match.
-  #
-  #      Use a carriage return or the "OK" button to accept the  current
-  #      value in the text-entry window and exit.
-
-  def fselect(filepath, height=0, width=0)
-    tmp = Tempfile.new('tmp')
-
-    cmd = [ option_string(), '--fselect',
-      "#{filepath.inspect}, #{height} #{width} 2> #{tmp.path.inspect}" ].join(' ')
-
-    if run(cmd)
-      begin
-        selected_string = tmp.readline
-      rescue EOFError
-        selected_string = ""
-      end
-      tmp.close!
-      return selected_string
-    else
-      tmp.close!
-      return success
-    end
-  end
-
-
-  #
-  # An info box is basically a message box.  However, in this case,
-  # dialog  will  exit  immediately after displaying the message to
-  # the user.  The screen is not cleared when dialog exits, so that
-  # the  message  will remain on the screen until the calling shell
-  # script clears it later.  This is useful when you want to inform
-  # the  user that some operations are carrying on that may require
-  # some time to finish.
-  #
-  # Returns false if esc was pushed
-  #
-  def infobox(text, height=0, width=0)
-    run [ option_string(), 
-      '--infobox', 
-      %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
-  end
 
   #      A  radiolist box is similar to a menu box.  The only difference
   #      is that you can indicate which entry is currently selected,  by
@@ -951,52 +977,6 @@ class MRDialog
             "\" " + height.to_i.to_s + " " + width.to_i.to_s +
             " " + listheight.to_i.to_s + " " + itemlist + "2> " +
             tmp.path
-    log_debug("Command:\n#{command}")
-    success = system(command)
-
-    if success
-      selected_string = tmp.readline
-      tmp.close!
-      return selected_string
-    else
-      tmp.close!
-      return success
-    end
-
-  end
-
-  #      As  its  name  suggests, a menu box is a dialog box that can be
-  #      used to present a list of choices in the form of a menu for the
-  #      user  to  choose.   Choices  are  displayed in the order given.
-  #      Each menu entry consists of a tag string and  an  item  string.
-  #      The tag gives the entry a name to distinguish it from the other
-  #      entries in the menu.  The item is a short  description  of  the
-  #      option  that  the  entry represents.  The user can move between
-  #      the menu entries by pressing the cursor keys, the first  letter
-  #      of  the  tag  as  a  hot-key, or the number keys 1-9. There are
-  #      menu-height entries displayed in the menu at one time, but  the
-  #      menu will be scrolled if there are more entries than that.
-  #
-  #      Returns a string containing the tag of the chosen menu entry.
-
-  def menu(text="Text Goes Here", items=nil, height=0, width=0, listheight=0)
-    tmp = Tempfile.new('tmp')
-
-    itemlist = String.new
-
-    for item in items
-      itemlist += "\"" + item[0].to_s + "\" \"" + item[1].to_s +  "\" "
-
-      if @item_help
-              itemlist += "\"" + item[2].to_s + "\" "
-      end
-    end
-
-    command = option_string() + "--menu \"" + text.to_s +
-            "\" " + height.to_i.to_s + " " + width.to_i.to_s +
-            " " + listheight.to_i.to_s + " " + itemlist + "2> " +
-            tmp.path
-
     log_debug("Command:\n#{command}")
     success = system(command)
 
@@ -1133,44 +1113,6 @@ class MRDialog
         return success
       end
     
-  end
-
-  #      An input box is useful when you  want  to  ask  questions  that
-  #      require  the  user to input a string as the answer.  If init is
-  #      supplied it is used  to  initialize  the  input  string.   When
-  #      entering  the string, the backspace, delete and cursor keys can
-  #      be used to correct typing  errors.   If  the  input  string  is
-  #      longer  than can fit in the dialog box, the input field will be
-  #      scrolled.
-  #
-  #      On exit, the input string will be returned.
-  def inputbox(text="Please enter some text", height=0, width=0, init="")
-    tmp = Tempfile.new('tmp')
-
-    command = option_string() + "--inputbox \"" + text.to_s +
-    "\" " + height.to_i.to_s + " " + width.to_i.to_s + " "
-
-    unless init.empty?
-      command += init.to_s + " "
-    end
-
-    command += "2> " + tmp.path
-
-    log_debug(command)
-    success = system(command)
-
-    if success
-      begin
-        selected_string = tmp.readline
-      rescue EOFError
-        selected_string = ""
-      end
-      tmp.close!      
-      return selected_string
-    else
-      tmp.close!
-      return success
-    end
   end
 
     #      A yes/no dialog box of size height rows by width  columns  will
