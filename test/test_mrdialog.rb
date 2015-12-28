@@ -15,11 +15,17 @@ class TestMRDialog < Minitest::Test
   end
 
   def commands
+    buildlist_items = []
+    buildlist_items << dialog.list_item(tag: '1', item: 'Item ')
     { 
+      buildlist: [ 'buildlist', [ ['1', 'Item #1', 'on'], ['2', 'Item #2', 'off'], ['3', 'Item #3', 'off']], 24, 80, 12 ],
+      #calendar: [ 'calendar', 0, 0, 25, 12, 2015 ],
       infobox: [ 'infobox', 24, 80 ],
       msgbox: [ 'msgbox', 24, 80 ],
+      yesno: [ 'yesno', 0, 0 ],
     }
   end
+
 
   #
   # Boxes
@@ -279,33 +285,59 @@ class TestMRDialog < Minitest::Test
   #
   # Options 
   # 
-  def test_ascii_lines_option
-    dialog.ascii_lines = false
 
-    commands.each do |method, arguments|
-      dialog.send(method, *arguments)
-      refute_includes(dialog.last_cmd, '--ascii-lines')
+  def option_test(method, option_string, false_value, true_value)
+    dialog.dry_run = true
+    dialog.send("#{method}=".to_sym, false_value)
+    commands.each do |method, args|
+      dialog.send(method, *args)
+      refute_includes(dialog.last_cmd, option_string)
     end
 
-    dialog.ascii_lines = true
+    dialog.send("#{method}=".to_sym, true_value)
     commands.each do |method, arguments|
       dialog.send(method, *arguments)
-      assert_includes(dialog.last_cmd, '--ascii-lines')
+      assert_includes(dialog.last_cmd, option_string)
     end
   end
 
+  def test_ascii_lines
+    option_test(:ascii_lines, '--ascii-lines', false, true)
+  end
+
+  def test_aspect
+    option_test(:aspect, '--aspect 9', nil, 9)
+  end
+
+  def test_backtitle
+    option_test(:backtitle, '--backtitle "Dialog"', nil, 'Dialog')
+  end
+
+  def test_begin_pos
+    option_test(:begin_pos, '--begin 0 0', nil, [0, 0])
+  end
+
+  def test_cancel_label
+    option_test(:cancel_label, '--cancel-label "Cancel"', nil, 'Cancel')
+  end
+
+  def test_colors
+    option_test(:colors, '--colors', false, true)
+  end
+
+  def test_clear
+    option_test(:clear, '--clear', false, true)
+  end
+
+  def test_column_separator
+    option_test(:column_separator, '--column-separator "|"', nil, '|')
+  end
+
+  def test_cr_wrap
+    option_test(:cr_wrap, '--cr-wrap', false, true)
+  end
+
   def test_exit_label
-    dialog.exit_label = nil
-
-    commands.each do |method, arguments|
-      dialog.send(method, *arguments)
-      refute_includes(dialog.last_cmd, '--exit-label')
-    end
-
-    dialog.exit_label = 'Continue'
-    commands.each do |method, arguments|
-      dialog.send(method, *arguments)
-      assert_includes(dialog.last_cmd, '--exit-label')
-    end 
+    option_test(:exit_label, '--exit-label', nil, 'Continue')
   end
 end

@@ -88,15 +88,43 @@ class MRDialog
   attr_accessor :clear
 
   #
+  # Interpet embedded "\Z" sequences in the dialog text by the following
+  # character, which tells **dialog** to set colors or video attributes:
+  #
+  # * 0 through 7 are the ANSI color numbers used in curses: black, red, green
+  #   yellow, blue, magenta, cyan and white respectively.
+  # * Bold is set by 'b', reset by 'B'.
+  # * Reverse is set by 'r', reset by 'R'.
+  # * Underline is set by 'u', reset by 'U'.
+  # * The settings are cumulative, e.g., "\Zb\Z1" makes the following text bold
+  #   (perhaps bright) red.
+  # * Restore normal settings with "\Zn".
+  #
+  attr_accessor :colors 
+
+  #
+  # Tell **dialog** to split data for radio/checkboxes and menus on the
+  # occurrences of the given string, and to align the split data into columns.
+  #
+  #     dialog.column_separator = '|'
+  #
+  attr_accessor :column_separator
+
+  #
   # Interpret embedded newlines in the dialog text as a newline 
-  # on the screen. Otherwise, dialog will only wrap lines where 
-  # needed to fit inside the text box. Even though you can control 
-  # line breaks with this, dialog will still wrap any lines that are 
-  # too long for the width of the box. Without cr-wrap, the layout
-  # of your text may be formatted to look nice in the source code of 
+  # on the screen. Otherwise, **dialog** will only wrap lines where 
+  # needed to fit inside the text box.
+  #
+  # Even though you can control line breaks with this, dialog will still wrap
+  # any lines that are too long for the width of the box. Without cr-wrap, the
+  # layout of your text may be formatted to look nice in the source code of 
   # your script without affecting the way it will look in the dialog.
   #
-  attr_accessor :crwrap
+  # See also the "`--no-collapse`" and "`--trim`" options.
+  #
+  #     dialog.cr_wrap = true
+  #
+  attr_accessor :cr_wrap
 
   #
   # If the host provides `strftime`, this option allows you to specify the
@@ -656,9 +684,7 @@ class MRDialog
   # Returns false if esc was pushed
   #
   def infobox(text, height=0, width=0)
-    run [ option_string(), 
-      '--infobox', 
-      %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
+    run [option_string(), '--infobox', text.inspect, height, width].join(' ')
   end
 
   #
@@ -741,7 +767,7 @@ class MRDialog
   # and the calling shell script can continue its operation.
   #
   def msgbox(text="Text Goes Here", height=0, width=0)
-    run [ option_string, '--msgbox', %Q(#{text.inspect} #{height.to_i} #{width.to_i}) ].join(' ')
+    run [option_string, '--msgbox', text.inspect, height, width].join(' ')
   end
 
   #
@@ -1051,6 +1077,9 @@ class MRDialog
       (options << "--begin #{begin_pos[0..1].join(' ')}") if begin_pos
       (options << "--cancel-label #{cancel_label.inspect})") if cancel_label
       (options << "--clear") if clear
+      (options << "--colors") if colors
+      (options << "--column-separator #{column_separator.inspect}") if column_separator
+      (options << "--cr-wrap") if cr_wrap
       (options << "--date-format #{date_format.inspect}") if date_format
       (options << "--defaultno") if defaultno
       (options << "--default-button #{default_button.inspect}") if default_button
