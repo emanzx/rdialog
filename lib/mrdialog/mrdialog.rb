@@ -134,6 +134,13 @@ class MRDialog
   attr_accessor :default_button
 
   #
+  # Override the label used for "EXIT" buttons.
+  #
+  #     dialog.exit_label = 'Continue'
+  #
+  attr_accessor :exit_label
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1087,6 +1094,7 @@ class MRDialog
       (options << "--date-format #{date_format.inspect}") if date_format
       (options << "--defaultno") if defaultno
       (options << "--default-button #{default_button.inspect}") if default_button
+      (options << "--exit-label #{exit_label.inspect}") if exit_label
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel

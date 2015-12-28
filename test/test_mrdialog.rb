@@ -274,4 +274,19 @@ class TestMRDialog < Minitest::Test
       assert_includes(dialog.last_cmd, '--ascii-lines')
     end
   end
+
+  def test_exit_label
+    dialog.exit_label = nil
+
+    commands.each do |method, arguments|
+      dialog.send(method, *arguments)
+      refute_includes(dialog.last_cmd, '--exit-label')
+    end
+
+    dialog.exit_label = 'Continue'
+    commands.each do |method, arguments|
+      dialog.send(method, *arguments)
+      assert_includes(dialog.last_cmd, '--exit-label')
+    end 
+  end
 end
