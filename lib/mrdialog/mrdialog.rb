@@ -281,6 +281,7 @@ class MRDialog
       else
         result = system(cmd)
       end
+      @exit_code = $?.exitstatus
     end 
     logger.debug("Exit code: #{exit_code}") if logger
     result
@@ -666,10 +667,8 @@ class MRDialog
   # Author:: muquit@muquit.com Apr-02-2014 
   ##---------------------------------------------------  
   def gauge(text, height=0, width=0, percent=0)
-    cmd = [ option_string(),
-      '--gauge',
-      %Q(#{text.inspect} #{height} #{width} #{percent}) ].join(' ')
-    run(cmd) { |fh| yield fh }
+    run([option_string(), '--gauge', text.inspect,
+      height, width, percent].join(' ')) { |fh| yield fh }
   end
 
   #
