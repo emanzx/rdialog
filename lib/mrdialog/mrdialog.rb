@@ -179,6 +179,13 @@ class MRDialog
   attr_accessor :exit_label
 
   #
+  # Show an extra button, between "OK" and "Cancel" buttons.
+  #
+  #     dialog.extra_button = 'Continue'
+  #
+  attr_accessor :extra_button
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1094,6 +1101,7 @@ class MRDialog
       (options << "--default-button #{default_button.inspect}") if default_button
       (options << "--default-item #{default_item.inspect}") if default_item
       (options << "--exit-label #{exit_label.inspect}") if exit_label
+      (options << "--extra-button #{extra_button.inspect}") if extra_button
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel

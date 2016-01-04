@@ -356,4 +356,8 @@ class TestMRDialog < Minitest::Test
   def test_exit_label
     option_test(:exit_label, '--exit-label', nil, 'Continue')
   end
+
+  def test_extra_button
+    option_test(:extra_button, '--extra-button', nil, 'Continue')
+  end
 end
