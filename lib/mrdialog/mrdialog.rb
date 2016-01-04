@@ -159,6 +159,8 @@ class MRDialog
   #
   #     dialog.default_button = 'ok'
   #
+  # TODO: Should we be strict and throw an error if this is not set to one of
+  #       the available options?
   attr_accessor :default_button
 
   #
