@@ -360,4 +360,8 @@ class TestMRDialog < Minitest::Test
   def test_extra_button
     option_test(:extra_button, '--extra-button', nil, 'Continue')
   end
+
+  def test_extra_label
+    option_test(:extra_label, '--extra-label', nil, 'More')
+  end
 end

@@ -186,6 +186,14 @@ class MRDialog
   attr_accessor :extra_button
 
   #
+  # Override the label used for "Extra" buttons. For `inputmenu` widgets, this
+  # defaults to "Rename".
+  #
+  #     dialog.extra_label = 'More'
+  #
+  attr_accessor :extra_label
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1102,6 +1110,7 @@ class MRDialog
       (options << "--default-item #{default_item.inspect}") if default_item
       (options << "--exit-label #{exit_label.inspect}") if exit_label
       (options << "--extra-button #{extra_button.inspect}") if extra_button
+      (options << "--extra-label #{extra_label.inspect}") if extra_label
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel
