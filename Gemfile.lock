@@ -68,7 +68,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.0)
+  bundler (~> 1.1)
   jeweler (~> 2.0.1)
   minitest (~> 5.8)
   minitest-reporters (~> 1.1)
