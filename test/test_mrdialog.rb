@@ -341,6 +341,10 @@ class TestMRDialog < Minitest::Test
     option_test(:date_format, '--date-format', nil, '%Y%m%d-%H%MS')
   end
 
+  def test_defaultno
+    option_test(:defaultno, '--defaultno', false, true)
+  end
+
   def test_exit_label
     option_test(:exit_label, '--exit-label', nil, 'Continue')
   end
