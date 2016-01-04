@@ -321,12 +321,12 @@ class TestMRDialog < Minitest::Test
     option_test(:cancel_label, '--cancel-label "Cancel"', nil, 'Cancel')
   end
 
-  def test_colors
-    option_test(:colors, '--colors', false, true)
-  end
-
   def test_clear
     option_test(:clear, '--clear', false, true)
+  end
+
+  def test_colors
+    option_test(:colors, '--colors', false, true)
   end
 
   def test_column_separator
@@ -335,6 +335,10 @@ class TestMRDialog < Minitest::Test
 
   def test_cr_wrap
     option_test(:cr_wrap, '--cr-wrap', false, true)
+  end
+
+  def test_date_format
+    option_test(:date_format, '--date-format', nil, '%Y%m%d-%H%MS')
   end
 
   def test_exit_label
