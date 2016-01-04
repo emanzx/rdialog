@@ -194,6 +194,23 @@ class MRDialog
   attr_accessor :extra_label
 
   #
+  # Show a help-button after "OK" and "Cancel" buttons, i.e., in checklist,
+  # radiolist and menu boxes.
+  #
+  # On exit, the return status will indicate that the Help button was pressed.
+  # MRDialog will also write a message to its output after the token "HELP":
+  #
+  # * If #item_help is also given, the item-help text will be written.
+  # * Otherwise, the item's tag (the first field) will be written.
+  # 
+  # You can use the `--help-tags` option and/or set the DIALOG_ITEM_HELP
+  # environment variable to modify these messages and exit-status.
+  #
+  #     dialog.help_button = true
+  #
+  attr_accessor :help_button
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1111,6 +1128,7 @@ class MRDialog
       (options << "--exit-label #{exit_label.inspect}") if exit_label
       (options << "--extra-button #{extra_button.inspect}") if extra_button
       (options << "--extra-label #{extra_label.inspect}") if extra_label
+      (options << "--help-button") if help_button
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel
