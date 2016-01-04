@@ -349,6 +349,10 @@ class TestMRDialog < Minitest::Test
     option_test(:default_button, '--default-button', nil, 'cancel')
   end
 
+  def test_default_item
+    option_test(:default_item, '--default-item', nil, 'Option')
+  end
+
   def test_exit_label
     option_test(:exit_label, '--exit-label', nil, 'Continue')
   end

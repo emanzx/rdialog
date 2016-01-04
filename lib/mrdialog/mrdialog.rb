@@ -164,6 +164,14 @@ class MRDialog
   attr_accessor :default_button
 
   #
+  # Set the default item in a checklist, form or menu box. Normally the first
+  # item in the box is the default.
+  #
+  #     dialog.default_item = 'Option'
+  #
+  attr_accessor :default_item
+
+  #
   # Override the label used for "EXIT" buttons.
   #
   #     dialog.exit_label = 'Continue'
@@ -1084,6 +1092,7 @@ class MRDialog
       (options << "--date-format #{date_format.inspect}") if date_format
       (options << "--defaultno") if defaultno
       (options << "--default-button #{default_button.inspect}") if default_button
+      (options << "--default-item #{default_item.inspect}") if default_item
       (options << "--exit-label #{exit_label.inspect}") if exit_label
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
