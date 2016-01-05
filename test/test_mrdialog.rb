@@ -380,4 +380,8 @@ class TestMRDialog < Minitest::Test
   def test_help_tags
       option_test(:help_tags, '--help-tags', false, true)
   end
+
+  def test_hfile
+    option_test(:hfile, '--hfile', nil, 'helpfile.txt')
+  end
 end

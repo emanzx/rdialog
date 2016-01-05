@@ -235,6 +235,13 @@ class MRDialog
   attr_accessor :help_tags
 
   #
+  # Display the given file using a textbox when the user presses F1.
+  #
+  #     dialog.hfile = 'helpfile.txt'
+  #
+  attr_accessor :hfile 
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1156,6 +1163,7 @@ class MRDialog
       (options << "--help-label #{help_label.inspect}") if help_label
       (options << "--help-status") if help_status
       (options << "--help-tags") if help_tags
+      (options << "--hfile #{hfile.inspect}") if hfile
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel
