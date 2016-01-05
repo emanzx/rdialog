@@ -211,6 +211,13 @@ class MRDialog
   attr_accessor :help_button
 
   #
+  # Override the label used for "Help" buttons.
+  #
+  #     dialog.help_label = 'Assistance'
+  #
+  attr_accessor :help_label
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1129,6 +1136,7 @@ class MRDialog
       (options << "--extra-button #{extra_button.inspect}") if extra_button
       (options << "--extra-label #{extra_label.inspect}") if extra_label
       (options << "--help-button") if help_button
+      (options << "--help-label #{help_label.inspect}") if help_label
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel
