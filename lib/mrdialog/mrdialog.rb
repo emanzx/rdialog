@@ -218,6 +218,15 @@ class MRDialog
   attr_accessor :help_label
 
   #
+  # If the help-button is selected, writes the checklist, radiolist or form 
+  # information after the item-help "HELP" information. This can be used to
+  # reconstruct the state of a checklist after processing the request.
+  #
+  #     dialog.help_status = true
+  #
+  attr_accessor :help_status
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1137,6 +1146,7 @@ class MRDialog
       (options << "--extra-label #{extra_label.inspect}") if extra_label
       (options << "--help-button") if help_button
       (options << "--help-label #{help_label.inspect}") if help_label
+      (options << "--help-status") if help_status
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel
