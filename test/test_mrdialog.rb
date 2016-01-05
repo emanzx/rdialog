@@ -388,4 +388,8 @@ class TestMRDialog < Minitest::Test
   def test_hline
     option_test(:hline, '--hline', nil, 'A string to display')
   end
+
+  def test_ignore
+    option_test(:ignore, '--ignore', false, true)
+  end
 end

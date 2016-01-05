@@ -249,6 +249,15 @@ class MRDialog
   attr_accessor :hline
 
   #
+  # Ignore options that **dialog** does not recognize. Some well-known ones
+  # such as "`--icon`" are ignored anyway, but this is a better choice for
+  # compatability with other implementations.
+  #
+  #     dialog.ignore = true
+  #
+  attr_accessor :ignore
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1172,6 +1181,7 @@ class MRDialog
       (options << "--help-tags") if help_tags
       (options << "--hfile #{hfile.inspect}") if hfile
       (options << "--hline #{hline.inspect}") if hline
+      (options << "--ignore") if ignore
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel
