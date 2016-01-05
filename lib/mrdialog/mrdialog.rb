@@ -276,13 +276,26 @@ class MRDialog
   #     dialog.insecure = true
   #
   attr_accessor :insecure
-  
+
   #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
   #
   attr_accessor :item_help
+
+  #
+  # When built with **ncurses**, **dialog** normally checks to see if it is
+  # running in an **xterm**, and in that case tries to suppress the
+  # initialization strings that would make it switch to the alternate screen.
+  #
+  # Switching between te normal and alternate screens is visually distracting in
+  # a script which runs **dialog** several times. Use this option to allow
+  # **dialog** to use those initialization strings.
+  #
+  #     dialog.keep_tite = true
+  #
+  attr_accessor :keep_tite
 
   #
   # Suppress the "Cancel" button in checklist, inputbox and menubox 
@@ -1199,6 +1212,7 @@ class MRDialog
       (options << "--input-fd #{input_fd.inspect}") if input_fd
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
+      (options << "--keep-tite") if keep_tite
       (options << "--nocancel") if nocancel
       (options << "--ok-label #{ok_label.inspect}") if ok_label
       (options << "--separator #{separator.inspect}") if separator

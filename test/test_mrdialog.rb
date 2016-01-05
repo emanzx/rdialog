@@ -401,4 +401,8 @@ class TestMRDialog < Minitest::Test
   def test_insecure
     option_test(:insecure, '--insecure', false, true)
   end
+
+  def test_keep_tite
+    option_test(:keep_tite, '--keep-tite', false, true)
+  end
 end
