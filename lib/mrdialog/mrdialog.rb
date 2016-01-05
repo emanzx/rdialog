@@ -298,6 +298,20 @@ class MRDialog
   attr_accessor :keep_tite
 
   #
+  # Normally when **dialog** performs several **tailboxbg** widgets connected by
+  # #and_widget, it clears the old widget from the screen by painting over
+  # it. Use this option to suppress that repainting.
+  #
+  # At exit, **dialog** repaints all of the widgets which have been marked with
+  # #keep_window, even if they are not **tailboxbg** widgets. That causes
+  # them to be repainted in reverse order. See the discussion of the #clear
+  # option for examples.
+  #
+  #     dialog.keep_window = true
+  #
+  attr_accessor :keep_window
+
+  #
   # Suppress the "Cancel" button in checklist, inputbox and menubox 
   # modes. A script can still test if the user pressed the ESC key to 
   # cancel to quit.
@@ -1213,6 +1227,7 @@ class MRDialog
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--keep-tite") if keep_tite
+      (options << "--keep-window") if keep_window
       (options << "--nocancel") if nocancel
       (options << "--ok-label #{ok_label.inspect}") if ok_label
       (options << "--separator #{separator.inspect}") if separator
