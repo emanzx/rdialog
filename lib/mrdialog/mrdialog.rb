@@ -242,6 +242,13 @@ class MRDialog
   attr_accessor :hfile 
 
   #
+  # Display the given string centered at the bottom of the widget.
+  #
+  #     dialog.hline = 'A string to display'
+  #
+  attr_accessor :hline
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1164,6 +1171,7 @@ class MRDialog
       (options << "--help-status") if help_status
       (options << "--help-tags") if help_tags
       (options << "--hfile #{hfile.inspect}") if hfile
+      (options << "--hline #{hline.inspect}") if hline
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel

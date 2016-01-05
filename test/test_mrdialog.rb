@@ -384,4 +384,8 @@ class TestMRDialog < Minitest::Test
   def test_hfile
     option_test(:hfile, '--hfile', nil, 'helpfile.txt')
   end
+
+  def test_hline
+    option_test(:hline, '--hline', nil, 'A string to display')
+  end
 end
