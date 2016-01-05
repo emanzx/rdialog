@@ -227,6 +227,14 @@ class MRDialog
   attr_accessor :help_status
 
   #
+  # Modify the messages written on exit for `--help-button` by making them
+  # always just the item's tag. This does not affect the exit status code.
+  #
+  #     dialog.help_tags = true
+  #
+  attr_accessor :help_tags
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1147,6 +1155,7 @@ class MRDialog
       (options << "--help-button") if help_button
       (options << "--help-label #{help_label.inspect}") if help_label
       (options << "--help-status") if help_status
+      (options << "--help-tags") if help_tags
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel

@@ -376,4 +376,8 @@ class TestMRDialog < Minitest::Test
   def test_help_status
     option_test(:help_status, '--help-status', false, true)
   end
+
+  def test_help_tags
+      option_test(:help_tags, '--help-tags', false, true)
+  end
 end
