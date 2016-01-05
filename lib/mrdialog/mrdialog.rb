@@ -258,6 +258,18 @@ class MRDialog
   attr_accessor :ignore
 
   #
+  # Read keyboard input from the given file descriptor. Most **dialog** scripts
+  # read from the standard input, but the gauge widget reads a pipe (which is
+  # always standard input). Some configurations do not work properly when
+  # **dialog** tries to reopen the terminal. Use this option (with appropriate
+  # juggling of file-descriptors) if your script must work in that type of
+  # environment.
+  #
+  #     dialog.input_fd = 'file.txt'
+  #
+  attr_accessor :input_fd
+
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -1182,6 +1194,7 @@ class MRDialog
       (options << "--hfile #{hfile.inspect}") if hfile
       (options << "--hline #{hline.inspect}") if hline
       (options << "--ignore") if ignore
+      (options << "--input-fd #{input_fd.inspect}") if input_fd
       (options << "--insecure") if insecure
       (options << "--item-help") if item_help
       (options << "--nocancel") if nocancel

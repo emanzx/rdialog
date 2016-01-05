@@ -392,4 +392,10 @@ class TestMRDialog < Minitest::Test
   def test_ignore
     option_test(:ignore, '--ignore', false, true)
   end
+
+  # TODO: not sure this test is correct
+  def test_input_fd
+    option_test(:input_fd, '--input-fd', nil, 'STDOUT')
+  end
+
 end
