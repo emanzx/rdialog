@@ -273,12 +273,12 @@ class TestMRDialog < Minitest::Test
 
   def test_yesno
     dialog.title = 'YESNO'
-    result = dialog.yesno('Is ENQ?')
+    result = dialog.yesno('Is Yes?')
     cmd = dialog.last_cmd
     assert result
     assert_includes(cmd, '--yesno') 
     dialog.defaultno = true
-    result = dialog.yesno('Is ENQ not?')
+    result = dialog.yesno('Is Yes No?')
     refute result
   end
 
@@ -408,5 +408,173 @@ class TestMRDialog < Minitest::Test
 
   def test_keep_window
     option_test(:keep_window, '--keep-window', false, true)
+  end
+
+  def test_last_key
+    option_test(:last_key, '--last-key', false, true)
+  end
+
+  def test_max_input
+    option_test(:max_input, '--max-input', nil, '1024')
+  end
+
+  def test_no_cancel
+    option_test(:no_cancel, '--no-cancel', false, true)
+  end
+
+  def test_nocancel
+    option_test(:nocancel, '--nocancel', false, true)
+  end
+
+  def test_no_collapse
+    option_test(:no_collapse, '--no-collapse', false, true)
+  end
+
+  def test_no_items
+    option_test(:no_items, '--no-items', false, true)
+  end
+
+  def test_no_kill
+    option_test(:no_kill, '--no-kill', false, true)
+  end
+
+  def test_no_label
+    option_test(:no_label, '--no-label', nil, 'Nope')
+  end
+
+  def test_no_lines
+    option_test(:no_lines, '--no-lines', false, true)
+  end
+
+  def test_no_mouse
+    option_test(:no_mouse, '--no-mouse', false, true)
+  end
+
+  def test_no_nl_expand
+    option_test(:no_nl_expand, '--no-nl-expand', false, true)
+  end
+
+  def test_no_ok
+    option_test(:no_ok, '--no-ok', false, true)
+  end
+
+  def test_nook
+    option_test(:nook, '--nook', false, true)
+  end
+
+  def test_no_shadow
+    option_test(:no_shadow, '--no-shadow', false, true)
+  end
+
+  def test_no_tags
+    option_test(:no_tags, '--no-tags', false, true)
+  end
+
+  def test_ok_label
+    option_test(:ok_label, '--ok-label', nil, 'Alright')
+  end
+
+  def test_output_fd
+    option_test(:output_fd, '--output-fd', nil, 'STDOUT')
+  end
+
+  def test_separator
+    option_test(:separator, '--separator', nil, '|')
+  end
+
+  def test_output_separator
+    option_test(:output_separator, '--output-separator', nil, '||')
+  end
+
+  def test_print_maxsize
+    option_test(:print_maxsize, '--print-maxsize', false, true)
+  end
+
+  def test_print_size
+    option_test(:print_size, '--print-size', false, true)
+  end
+
+  def test_print_version
+    option_test(:print_version, '--print-version', false, true)
+  end
+
+  def test_quoted
+    option_test(:quoted, '--quoted', false, true)
+  end
+
+  def test_scrollbar
+    option_test(:scrollbar, '--scrollbar', false, true)
+  end
+
+  def test_separate_output
+    option_test(:separate_output, '--separate-output', false, true)
+  end
+
+  def test_separate_widget
+    option_test(:separate_widget, '--separate-widget', nil, 'Separator')
+  end
+
+  def test_shadow
+    option_test(:shadow, '--shadow', false, true)
+  end
+
+  def test_single_quoted
+    option_test(:single_quoted, '--single-quoted', false, true)
+  end
+
+  def test_size_err
+    option_test(:size_err, '--size-err', false, true)
+  end
+
+  def test_sleep
+    option_test(:sleep, '--sleep', false, '2')
+  end
+
+  def test_stderr
+    option_test(:stderr, '--stderr', false, true)
+  end
+
+  def test_stdout
+    option_test(:stdout, '--stdout', false, true)
+  end
+
+  def test_tab_correct
+    option_test(:tab_correct, '--tab-correct', false, true)
+  end
+
+  def test_tab_len
+    option_test(:tab_len, '--tab-len', nil, '2')
+  end
+
+  def test_time_format
+    option_test(:time_format, '--time-format', nil, '%Y%m%d-%H%M%S')
+  end
+
+  def test_timeout
+    option_test(:timeout, '--timeout', nil, '10')
+  end
+
+  def test_title
+    option_test(:title, '--title', nil, 'RDialog')
+  end
+
+  def test_trace
+    option_test(:trace, '--trace', nil, 'tracefile.txt')
+  end
+
+  def test_trim
+    option_test(:trim, '--trim', false, true)
+  end
+
+  def test_version
+    option_test(:version, '--version', false, true)
+  end
+
+  def test_visit_items
+    option_test(:visit_items, '--visit-items', false, true)
+  end
+
+  def test_yes_label
+    option_test(:yes_label, '--yes-label', nil, 'Yup')
   end
 end
