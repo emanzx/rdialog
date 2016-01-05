@@ -398,4 +398,7 @@ class TestMRDialog < Minitest::Test
     option_test(:input_fd, '--input-fd', nil, 'STDOUT')
   end
 
+  def test_insecure
+    option_test(:insecure, '--insecure', false, true)
+  end
 end

@@ -270,6 +270,14 @@ class MRDialog
   attr_accessor :input_fd
 
   #
+  # Make the password widget friendlier but less secure, by echoing asterisks
+  # for each character.
+  #
+  #     dialog.insecure = true
+  #
+  attr_accessor :insecure
+  
+  #
   # Interpret the tags data for checklist, radiolist and menuboxes 
   # adding a column which is displayed in the bottom line of the 
   # screen, for the currently selected item.
@@ -334,12 +342,6 @@ class MRDialog
 
   # Override the label used for "OK" buttons
   attr_accessor :ok_label
-
-
-  # make the password widget friendlier but less secure, by echoing
-  # asterisks for each character.
-  attr_accessor :insecure
-
 
   attr_accessor :separator
 
