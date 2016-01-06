@@ -1,9 +1,13 @@
-### MRDialog
+# RDialog
 
-mrdialog is a pure 
+**Note:** This is a fork of Muhammad Muquit's [MRDialog](https://github.com/muquit/mrdialog) which is based on Aleks Clark's **rdialog**. I'm in the process of refactoring the majority of the code, adding all current options and boxes available with **dialog**, and adding much needed testing. Hopefully finished by February, 2016.
+
+---
+
+rdialog is a pure 
 [ruby](https://www.ruby-lang.org/) library for the ncurses 
 [dialog](http://invisible-island.net/dialog/dialog.html) program. 
-[dialog](http://invisible-island.net/dialog/dialog.html) is
+**dialog** is
 a command line tool that can present questions, messages, forms using 
 dialog boxes from a shell script. If you compiled linux kernel and typed 'make
 menuconfig, configured Linux from command line with various configuration

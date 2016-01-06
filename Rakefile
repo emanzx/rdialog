@@ -1,7 +1,34 @@
 # encoding: utf-8
 
+=begin
+require 'rubygems/package_task'
+
+APP_BASE = File.dirname(File.expand_path(__FILE__))
+
+def gemspec
+  @spec ||= Gem::Specification.load(Dir['*.gemspec'].first)
+end
+
+task default: :gem
+
+desc "Build #{gemspec.file_name} into the pkg directory"
+task :gem do
+  FileUtils.mkdir_p 'pkg'
+  Gem::Package.build(gemspec)
+  FileUtils.mv gemspec.file_name, 'pkg'
+end
+task build: :gem
+
+desc "Build and install #{gemspec.file_name}"
+task install: :gem do
+  sh "gem install pkg/#{gemspec.file_name}"
+end
+=end
+
 require 'rubygems'
+require 'rubygems/package_task'
 require 'bundler'
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -10,36 +37,30 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 require 'rake'
-
-require 'jeweler'
-Jeweler::Tasks.new do |gem|
-  # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
-  gem.name = "mrdialog"
-  gem.homepage = "http://github.com/muquit/mrdialog"
-  gem.license = "MIT"
-  gem.summary = %Q{A ruby gem for ncurses dialog program, based on the gem rdialog}
-  gem.description = %Q{A ruby gem for ncurses dialog program.
-      This gem is based on rdialog (http://rdialog.rubyforge.org/) by
-      Aleks Clark. I added support for missing widgets, fixed 
-      bugs and wrote the sample apps. I am 
-      also renaming the class to MRDialog to avoid conflicts.
-      Please look at ChangeLog.md for details.  }
-  gem.email = "muquit@gmail.com"
-  gem.authors = ["Aleks Clark", "Muhammad Muquit"]
-  gem.files.include 'lib/mrdialog.rb'
-  gem.files.include 'lib/mrdialog/mrdialog.rb'
-  gem.files.include 'samples/*'
-  gem.files.include 'VERSION'
-  gem.files.include 'README.md'
-  gem.files.include 'ChangeLog.md'
-  # dependencies defined in Gemfile
-end
-Jeweler::RubygemsDotOrgTasks.new
-
 require 'rake/testtask'
+
+task default: :gem
+
+def gemspec
+  @spec ||= Gem::Specification.load(Dir['*.gemspec'].first)
+end
+
+desc "Build #{gemspec.file_name} into the pkg directory"
+task :gem do
+  FileUtils.mkdir_p 'pkg'
+  Gem::Package.build(gemspec)
+  FileUtils.mv gemspec.file_name, 'pkg'
+end
+task build: :gem
+
+desc "Build and install #{gemspec.file_name}"
+task install: :gem do
+  sh "gem install pkg/#{gemspec.file_name}"
+end
+
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
+  test.pattern = 'test/**/*_test.rb'
   test.verbose = true
 end
 
@@ -56,7 +77,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "mrdialog #{version}"
+  rdoc.title = "rdialog #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
