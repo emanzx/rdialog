@@ -665,9 +665,8 @@ class MRDialog
   #
   attr_accessor :path_to_dialog
 
-  # -- muquit@muquit.com mod starts---
     
-  # exit codes
+  # Exit Codes
   attr_accessor :dialog_ok
   attr_accessor :dialog_cancel
   attr_accessor :dialog_help
@@ -680,19 +679,11 @@ class MRDialog
   attr_accessor :logger
 
 
-
   # set it to true for passwordform.
   attr_accessor :password_form
 
-  # For  widgets  holding a scrollable set of data, draw a scrollbar
-  # on its right-margin.  This does not respond to the mouse.
-  attr_accessor :scrollbar
-  # -- muquit@muquit.com mod ends---
-
   # Returns a new RDialog Object
-
   def initialize
-    # muquit@muquit.com mod starts--
     $stdout.sync = true
     $stderr.sync = true
     @dialog_ok = DIALOG_OK
@@ -702,7 +693,6 @@ class MRDialog
     @dialog_item_help = DIALOG_ITEM_HELP
     @dialog_esc = DIALOG_ESC
     @exit_code = 0
-    # muquit@muquit.com mod ends--
   end
 
   #
@@ -736,6 +726,7 @@ class MRDialog
         @logger.debug("#{msg}")
     end
   end
+  alias_method :debug, :log_debug
 
   #  return the exit code of the dialog
   def exit_code
@@ -821,16 +812,16 @@ class MRDialog
       %Q(#{text.inspect} #{height} #{width} #{listheight} ),
       itemlist.join(' '), "2> #{tmp.path.inspect}" ].join(' ')
 
-    log_debug "Number of items: #{items.size}"
-    #log_debug "Command:\n#{cmd}"
+    debug "Number of items: #{items.size}"
 
     run(cmd)
     #@exit_code = $?.exitstatus
     #log_debug "Exit code: #{exit_code}"
     if @exit_code == 0
       lines = tmp.read
-      log_debug "lines: #{lines} #{lines.class}"
-      sep = Shellwords.escape(@separator)
+      debug "lines: #{lines} #{lines.class}"
+      sep = separator || output_separator || ' '
+      sep = Shellwords.escape(sep)
       a = lines.split(/#{sep}/)
       a.each do |tag|
         log_debug "tag: '#{tag}'"

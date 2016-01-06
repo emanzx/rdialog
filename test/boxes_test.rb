@@ -14,37 +14,28 @@ class TestMRDialog < Minitest::Test
     @dialog.logger = Logger.new(STDOUT)
   end
 
-  def commands
-    buildlist_items = []
-    buildlist_items << dialog.list_item(tag: '1', item: 'Item ')
-    { 
-      buildlist: [ 'buildlist', [ ['1', 'Item #1', 'on'], ['2', 'Item #2', 'off'], ['3', 'Item #3', 'off']], 24, 80, 12 ],
-      #calendar: [ 'calendar', 0, 0, 25, 12, 2015 ],
-      infobox: [ 'infobox', 24, 80 ],
-      msgbox: [ 'msgbox', 24, 80 ],
-      yesno: [ 'yesno', 0, 0 ],
-    }
-  end
-
-
-  #
-  # Boxes
-  #
-
   def test_buildlist
     dialog.title = 'BUILDLIST'
     items = []
     items << dialog.list_item(tag: '1', item: 'Item #1', status: true)
     items << dialog.list_item(tag: '2', item: 'Item #2', status: false)
     items << dialog.list_item(tag: '3', item: 'Item #3', status: false)
-    dialog.buildlist('"Buildlist" Test', items, 24, 80, 12)
+    items << dialog.list_item(tag: '4', item: 'Item #4', status: true)
+    items << dialog.list_item(tag: '5', item: 'Item #5', status: false)
+
+    text = %Q{"Buildlist" Test\n\nThis test makes sure items #1 and #4 are selected.}
+    tags = dialog.buildlist(text, items, 24, 80, 12)
+    assert_equal(['1', '4'], tags)
+    assert_equal(dialog.dialog_ok, dialog.exit_code)
+
     cmd = dialog.last_cmd
     assert_includes(cmd, '--buildlist', cmd)
-    assert_includes(cmd, '"\"Buildlist\" Test"', cmd)
     assert_includes(cmd, ' 24 80 12', cmd)
     assert_includes(cmd, '"1" "Item #1" "on" ')
     assert_includes(cmd, '"2" "Item #2" "off" ')
     assert_includes(cmd, '"3" "Item #3" "off" ')
+    assert_includes(cmd, '"4" "Item #4" "on" ')
+    assert_includes(cmd, '"5" "Item #5" "off" ')
   end
 
   def test_calendar
