@@ -312,16 +312,236 @@ class MRDialog
   attr_accessor :keep_window
 
   #
+  # At exit, report the last key which the user entered. This is the curses key
+  # code rather than a symbol or literal character. It can be used by scripts to
+  # distinguish between two keys which are bound to the same action.
+  #
+  #     dialog.last_key = true
+  #
+  attr_accessor :last_key
+
+  #
+  # Limit input strings to the given size. If not specified, the limit is 2048.
+  #
+  #     dialog.max_input = 1024
+  #
+  attr_accessor :max_input
+
+  #
   # Suppress the "Cancel" button in checklist, inputbox and menubox 
   # modes. A script can still test if the user pressed the ESC key to 
   # cancel to quit.
   #
+  attr_accessor :no_cancel
   attr_accessor :nocancel
+
+  #
+  # Normally **dialog** converts tabs to spaces and reduces multiple spaces to a
+  # single space for text which is displayed in a message boxes, etc. Use this
+  # option to disable that feature. Note that **dialog** will still wrap text,
+  # subject to the #cr_wrap and #trim options.
+  #
+  #     dialog.no_collapse = true
+  #
+  attr_accessor :no_collapse
+
+  #
+  # Some widgets (checklist, inputmenu, radiolist, menu) display a list with two
+  # columns (a "tag" and "item", i.e., "description"). This option tells
+  # **dialog** to read shorter rows, omitting the "item" part of the list. This
+  # is occasionally useful, e.g., if the tags provide enough information.
+  #
+  # See also #no_tags. If both options are given, this one is ignored.
+  #
+  #     dialog.no_items = true
+  #
+  attr_accessor :no_items
+
+  #
+  # Tells **dialog** to put the **tailboxbg** box in the background, printing its
+  # process id to **dialog**'s output. SIGHUP is disabled for the background
+  # process.
+  #
+  #     dialog.no_kill = true
+  #
+  attr_accessor :no_kill
+
+  #
+  # Override the label used for "No" buttons.
+  #
+  #     dialog.no_label = 'Nope'
+  #
+  attr_accessor :no_label
+
+  #
+  # Rather than draw lines around boxes, draw spaces in the same place. See also
+  # #ascii_lines. 
+  #
+  #     dialog.no_lines = true
+  #
+  attr_accessor :no_lines
+
+  #
+  # Do not enable the mouse.
+  #
+  #     dialog.no_mouse = true
+  #
+  attr_accessor :no_mouse
+
+  #
+  # Do not convert "\n" substrings of the message/prompt text into literal
+  # newlines.
+  #
+  #     dialog.no_nl_expand = true
+  #
+  attr_accessor :no_nl_expand
+
+  #
+  # Suppress the "OK" button in checklist, inputbox and menu box modes. A script
+  # can still test if the user pressed the "Enter" key to accept the data.
+  #
+  #     dialog.no_ok = true
+  #
+  attr_accessor :no_ok
+  attr_accessor :nook
+
+  #
+  # Suppress shadows that would be drawn to the right and bottom of each dialog
+  # box.
+  #
+  #     dialog.no_shadow = true
+  #
+  attr_accessor :no_shadow
+
+  #
+  # Some widgets (checklist, inputmenu, radiolist, menu) display a list with two
+  # columns (a "tag" and "description"). The tag is useful for scripting, but may
+  # not help the user. The #no_tags option (from Xdialog) may be used to suppress
+  # the column of tags from the display. Unlike the #no_items option, this does
+  # not affect the data which is read from the script.
+  #
+  # Xdialog does not display the tag column for the analogous buildlist and
+  # treeview widgets; **dialog** does the same.
+  #
+  # Normally **dialog** allows you to quickly move to entries on the displayed
+  # list, by matching a single character to the first character of the tag. When
+  # the #no_tags option is given, **dialog** matches against the first character
+  # of the description. In either case, the matchable character is high-lighted.
+  #
+  #     dialog.no_tags = true
+  #
+  attr_accessor :no_tags
+
+  #
+  # Override the label used for "OK" buttons.
+  #
+  #     dialog.ok_label = 'Alright'
+  #
+  attr_accessor :ok_label
+
+  # 
+  # Direct output to the given file descriptor. Most **dialog** scripts write to
+  # the standard error, but error messages may also be written there, depending
+  # on your script.
+  #
+  #     dialog.output_fd = 'dialogoutput.txt'
+  # 
+  attr_accessor :output_fd
+
+  #
+  # Specify a string that will separate the output on **dialog**'s output from 
+  # checklists, rather than a newline (for #separate_output) or a space. This
+  # applies to other widgets such as forms and editboxes which normally use a
+  # newline.
+  #
+  #     dialog.separator = '|'
+  #
+  attr_accessor :separator
+  attr_accessor :output_separator
+
+  #
+  # Print the maximum size of dialog boxes, i.e., the screen size, to
+  # **dialog**'s output. This may be used alone, without other options.
+  #
+  #     dialog.print_maxsize = true
+  #
+  attr_accessor :print_maxsize
+
+  #
+  # Prints the size of each dialog box to **dialog**'s output.
+  #
+  #     dialog.print_size = true
+  #
+  attr_accessor :print_size
+
+  #
+  # Prints **dialog**'s version to **dialog**'s output. This may be used alone,
+  # without other options. It does not cause **dialog** to exit by itself.
+  #
+  #     dialog.print_version = true
+  #
+  attr_accessor :print_version
+
+  #
+  # Normally **dialog** quotes the strings returned by checklist's as well as
+  # the item-help text. Use this option to quote all string results.
+  #
+  #     dialog.quoted = true
+  #
+  attr_accessor :quoted
+
+  #
+  # For widgets holding a scrollable set of data, draw a scrollbar on its right
+  # margin. This does not respond to the mouse.
+  #
+  #     dialog.scrollbar = true
+  #
+  attr_accessor :scrollbar
+
+  #
+  # For certain widgets (buildlist, checklist, treeview), output result one
+  # line at a time, with no quoting. This facilitates parsing by another
+  # program.
+  #
+  #     dialog.separate_output = true
+  #
+  attr_accessor :separate_output
+
+  # 
+  # Specify a string that will separate the output on **dialog**'s output from
+  # each widget. This is used to simplify parsing the result of a dialog with
+  # several widgets. If this option is not given, the default separator string
+  # is a tab character.
+  #
+  #     dialog.separate_widget = "\t"
+  #
+  attr_accessor :separate_widget
 
   #
   # Draw a shadow to the right and bottom of each dialog box.
   # 
+  #     dialog.shadow = true
+  #
   attr_accessor :shadow
+
+  #
+  # Use single-quoting as needed (and no quotes if unneeded) for the output of
+  # checklist's as well as the item-help text. If this option is not set,
+  # **dialog** uses double quotes around each item. In either case, **dialog**
+  # adds backslashes to make the output useful in shell scripts.
+  #
+  #     dialog.single_quoted = true
+  #
+  attr_accessor :single_quoted
+
+  #
+  # Check the resulting size of a dialog box before trying to use it, printing
+  # the resulting size if it is larger than the screen. (This option is obsolete,
+  # since all new-window calls are checked).
+  #
+  #     dialog.size_err = true
+  #
+  attr_accessor :size_err
 
   #
   # Sleep (delay) for the given integer of seconds after processing 
@@ -330,9 +550,31 @@ class MRDialog
   attr_accessor :sleep
 
   #
+  # Direct output to the standard error. This is the default, since curses
+  # normally writes screen updates to the standard output.
+  #
+  #     dialog.stderr = true
+  #
+  attr_accessor :stderr
+
+  #
+  # Direct output to the standard output. This option is provided for
+  # compatability with Xdialog, however using it in portable scripts is not
+  # recommended, since curses normally writes its screen updates to the
+  # standard output. If you use this option, **dialog** attempts to reopen the
+  # terminal so it can write to the display. Depending on the platform and your
+  # environment, that may fail.
+  #
+  #     dialog.stdout = true
+  #
+  attr_accessor :stdout
+
+  #
   # Convert each tab character to one or more spaces. 
   # Otherwise, tabs are rendered according to the curses library's 
   # interpretation.
+  #
+  #     dialog.tab_correct = true
   #
   attr_accessor :tab_correct
 
@@ -340,13 +582,83 @@ class MRDialog
   # Specify the number(int) of spaces that a tab character occupies 
   # if the tabcorrect option is set true. The default is 8.
   #
+  #     dialog.tab_len = '2'
+  #
   attr_accessor :tab_len
+
+  #
+  # If the host provides **strftime**, this option allows you to specify the
+  # format of the time printed for the #timebox widget. The day, month, year
+  # values in this case are for the current local time.
+  #
+  #     dialog.time_format = '%H%M%S'
+  #
+  attr_accessor :time_format
+
+  #
+  # Timeout (exit with error code) if no user response within the given number
+  # of seconds. A timeout of zero seconds is ignored.
+  #
+  #     dialog.timeout = 10
+  #
+  attr_accessor :timeout
 
   #
   # Title string to be displayed at the top of the dialog box.
   #
+  #     dialog.title = 'RDialog'
+  #
   attr_accessor :title
 
+  #
+  # Logs the command-line parameters, keystrokes and other information to the
+  # given file. If **dialog** reads a configure file, it is logged as well.
+  # Piped input to the #gauge widget is logged. Use control/T to log a picture
+  # of the current dialog window.
+  #
+  #     dialog.trace = 'tracefile.txt'
+  #
+  attr_accessor :trace
+
+  #
+  # Eliminate leading blanks, trim literal newlines and repeated blanks from
+  # message text.
+  # 
+  # See also the #cr_wrap and #no_collapse options.
+  #
+  #     dialog.trim = true
+  #
+  attr_accessor :trim
+
+  #
+  # Prints **dialog**'s version to the standard output, and exits. See also
+  # #print_version.
+  #
+  #     dialog.version = true
+  #
+  attr_accessor :version
+
+  #
+  # Modify the tab-traversal of checklist, radiolist, menubox and inputmenu to
+  # include the list of items as one of the states. This is useful as a visual
+  # aid, i.e., the cursor positon helps some users.
+  #
+  # When this option is given, the cursor is initially placed on the list.
+  # Abbreviations (the first letter of the tag) apply to the list items. If you
+  # tab to the button row, abbreviations apply to the buttons.
+  #
+  #     dialog.visit_items = true
+  #
+  attr_accessor :visit_items
+
+  #
+  # Override the label used for "Yes" buttons.
+  #
+  #     dialog.yes_label = 'Alright'
+  #
+  attr_accessor :yes_label
+
+  # 
   #
   # Alternate path to dialog. If this is not set, environment path
   # is used.
@@ -367,10 +679,7 @@ class MRDialog
   # ruby logger
   attr_accessor :logger
 
-  # Override the label used for "OK" buttons
-  attr_accessor :ok_label
 
-  attr_accessor :separator
 
   # set it to true for passwordform.
   attr_accessor :password_form
@@ -1228,15 +1537,48 @@ class MRDialog
       (options << "--item-help") if item_help
       (options << "--keep-tite") if keep_tite
       (options << "--keep-window") if keep_window
+      (options << "--last-key") if last_key
+      (options << "--max-input #{max_input.inspect}") if max_input
+      (options << "--no-cancel") if no_cancel
       (options << "--nocancel") if nocancel
+      (options << "--no-collapse") if no_collapse
+      (options << "--no-items") if no_items
+      (options << "--no-kill") if no_kill
+      (options << "--no-label #{no_label.inspect}") if no_label
+      (options << "--no-lines") if no_lines
+      (options << "--no-mouse") if no_mouse
+      (options << "--no-nl-expand") if no_nl_expand
+      (options << "--no-ok") if no_ok
+      (options << "--nook") if nook
+      (options << "--no-shadow") if no_shadow
+      (options << "--no-tags") if no_tags
       (options << "--ok-label #{ok_label.inspect}") if ok_label
+      (options << "--output-fd #{output_fd.inspect}") if output_fd
       (options << "--separator #{separator.inspect}") if separator
+      (options << "--output-separator #{output_separator.inspect}") if output_separator
+      (options << "--print-maxsize") if print_maxsize
+      (options << "--print-size") if print_size
+      (options << "--print-version") if print_version
+      (options << "--quoted") if quoted
       (options << "--scrollbar") if scrollbar
+      (options << "--separate-output") if separate_output
+      (options << "--separate-widget #{separate_widget.inspect}") if separate_widget
       (options << shadow ? "--shadow" : "--no-shadow") unless shadow.nil?
-      (options << "--sleep #{sleep}") if sleep
+      (options << "--single-quoted") if single_quoted
+      (options << "--size-err") if size_err
+      (options << "--sleep #{sleep.inspect}") if sleep
+      (options << "--stderr") if stderr
+      (options << "--stdout") if stdout
       (options << "--tab-correct") if tab_correct
-      (options << "--tab-len #{tab_len}") if tab_len
+      (options << "--tab-len #{tab_len.inspect}") if tab_len
+      (options << "--time-format #{time_format.inspect}") if time_format
+      (options << "--timeout #{timeout.inspect}") if timeout
       (options << "--title #{title.inspect}") if title
+      (options << "--trace #{trace.inspect}") if trace
+      (options << "--trim") if trim
+      (options << "--version") if version
+      (options << "--visit-items") if visit_items
+      (options << "--yes-label #{yes_label.inspect}") if yes_label
 
       return options.join(' ')
     end
