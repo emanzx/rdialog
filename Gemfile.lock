@@ -36,6 +36,3 @@ DEPENDENCIES
   rdialog!
   rdoc (~> 4.2)
   simplecov
-
-BUNDLED WITH
-   1.10.6
