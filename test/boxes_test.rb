@@ -1,6 +1,6 @@
 require 'minitest/autorun'
 require 'minitest/reporters'
-require_relative '../lib/mrdialog'
+require_relative '../lib/rdialog'
 
 Minitest::Reporters.use!
 
@@ -40,10 +40,14 @@ class TestMRDialog < Minitest::Test
 
   def test_calendar
     dialog.title = 'CALENDAR'
-    dialog.calendar('"Calendar" Test', 0, 0, 25, 12, 2015)
+    text = %Q{"Calendar" Test\n\nThis test makes sure the date of December 25th, 2015 is selected.}
+    date = dialog.calendar(text, 0, 0, 25, 12, 2015)
+    assert_equal(2015, date.year)
+    assert_equal(12, date.month)
+    assert_equal(25, date.day)
+
     cmd = dialog.last_cmd
     assert_includes(cmd, '--calendar', cmd)
-    assert_includes(cmd, '"\"Calendar\" Test"', cmd)
     assert_includes(cmd, '0 0 25 12 2015', cmd)
     assert_includes(cmd, '2> "', cmd)
   end
@@ -54,28 +58,34 @@ class TestMRDialog < Minitest::Test
     items << dialog.list_item(tag: '1', item: 'Item #1', status: true)
     items << dialog.list_item(tag: '2', item: 'Item #2', status: false)
     items << dialog.list_item(tag: '3', item: 'Item #3', status: false)
+    items << dialog.list_item(tag: '4', item: 'Item #4', status: true)
+    items << dialog.list_item(tag: '5', item: 'Item #5', status: false)
 
-    result = dialog.checklist('"checklist" test', items)
+    text = %Q{"Checklist" Test\n\nThis test makes sure items #1 and #4 are selected.}
+
+    tags = dialog.checklist('"checklist" test', items)
+    assert_equal(['1', '4'], tags)
+    assert_equal(dialog.dialog_ok, dialog.exit_code)
+
     cmd = dialog.last_cmd
-
-    assert_equal(['1'], result)  
+    assert_includes(cmd, '--checklist', cmd)
   end
 
   def test_dselect
     dialog.title = 'DSELECT'
-    result = dialog.dselect(__FILE__, 0, 0)
+    result = dialog.dselect(File.expand_path('..', File.dirname(__FILE__)), 0, 0)
     cmd = dialog.last_cmd
-    assert_equal('test_mrdialog.rb', result, cmd)
+    assert_includes(result, 'rdialog')
     assert_includes(cmd, '--dselect')
-    assert_includes(cmd, __FILE__, cmd)
     assert_includes(cmd, '0 0', cmd)
   end
 
   def test_editbox
     dialog.title = 'EDITBOX'
     result = dialog.editbox(__FILE__, 0, 0)
+    assert_equal(IO.read(__FILE__), result)
+
     cmd = dialog.last_cmd
-    assert_equal(result, IO.read(__FILE__), cmd)
     assert_includes(cmd, '--editbox', cmd)
     assert_includes(cmd, __FILE__, cmd)
     assert_includes(cmd, '0 0', cmd)
@@ -88,7 +98,12 @@ class TestMRDialog < Minitest::Test
     items << dialog.form_item(label: 'Field #1', ly: 1, lx: 1, item: 'Value 1', iy: 1, ix: 10, flen: 20, ilen: 0)
     items << dialog.form_item(label: 'Field #2', ly: 2, lx: 1, item: 'Value 2', iy: 2, ix: 10, flen: 20, ilen: 0)
     items << dialog.form_item(label: 'Field #3', ly: 3, lx: 1, item: 'Value 3', iy: 3, ix: 10, flen: 20, ilen: 0)
+
     result = dialog.form('"Form" Test', items, 0, 0, 0)
+    assert_equal('Value 1', result['Field #1'])
+    assert_equal('Value 2', result['Field #2'])
+    assert_equal('Value 3', result['Field #3'])
+
     cmd = dialog.last_cmd
     assert_includes(cmd, '--form', cmd)
     assert_includes(cmd, %q{"\"Form\" Test}, cmd)
@@ -99,10 +114,13 @@ class TestMRDialog < Minitest::Test
 
   def test_fselect
     dialog.title = 'FSELECT'
-    dir = File.dirname(__FILE__)
+    dir = File.expand_path('..', File.dirname(__FILE__))
     result = dialog.fselect(dir, 0, 0)
+    assert_equal(dir, result)
+
     cmd = dialog.last_cmd
-    assert_equal('.,', result, cmd)
+    assert_includes(cmd, '--fselect', cmd)
+    assert_includes(cmd, ' 0 0', cmd)
   end
 
   def test_gauge
@@ -133,8 +151,8 @@ class TestMRDialog < Minitest::Test
   def test_inputbox
     dialog.title = 'INPUTBOX'
     result = dialog.inputbox('"Inputbox" Test', 'inputbox test', 0, 0)
+    assert_equal('inputbox test', result)
     cmd = dialog.last_cmd
-    assert_equal('inputbox test', result, cmd)
     assert_includes(cmd, '--inputbox', cmd)
     assert_includes(cmd, '"\"Inputbox\" Test" 0 0 "inputbox test', cmd)
   end

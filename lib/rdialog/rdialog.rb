@@ -806,25 +806,22 @@ class MRDialog
     items.each do |item|
       itemlist << item.map { |i| "#{i.inspect}" }.join(' ')
     end
+    debug "Items: #{itemlist.inspect}"
 
     cmd = [ option_string(),
       '--buildlist',
       %Q(#{text.inspect} #{height} #{width} #{listheight} ),
       itemlist.join(' '), "2> #{tmp.path.inspect}" ].join(' ')
 
-    debug "Number of items: #{items.size}"
-
     run(cmd)
-    #@exit_code = $?.exitstatus
-    #log_debug "Exit code: #{exit_code}"
-    if @exit_code == 0
-      lines = tmp.read
-      debug "lines: #{lines} #{lines.class}"
+    if exit_code == 0
+      @last_result = tmp.read
+      debug "result: #{last_result.inspect}"
+      lines = last_result
       sep = separator || output_separator || ' '
       sep = Shellwords.escape(sep)
       a = lines.split(/#{sep}/)
       a.each do |tag|
-        log_debug "tag: '#{tag}'"
         selected_tags << tag if tag.to_s.length > 0
       end
     end
@@ -871,29 +868,24 @@ class MRDialog
   #
   def checklist(text, items, height=0, width=0, listheight=0)
     tmp = Tempfile.new('tmp')
-
-    itemlist = []
-    items.each do |item|
-      itemlist << item.map { |i| "#{i.inspect}" }.join(' ')
-    end
-
-    sep = "|"
+    items.map!{|item| item.map{|i| i.inspect}}.join(' ')
     cmd = [ option_string(), '--checklist',
-      "#{text.inspect} #{height} #{width} #{listheight} #{itemlist.join(' ')} 2> #{tmp.path.inspect}" ].join(' ')
+      text.inspect, height, width, listheight, items, '2>', tmp.path.inspect ].join(' ')
+
     success = run(cmd)
-    selected_array = []
+    selected_items = []
     if success
+      # TODO: Enclose in a begin/rescue clause? See #dselect method for an example.
       selected_string = tmp.readline
       tmp.close!
-      log_debug "Separator: #{@separator}"
-
-      sep = Shellwords.escape(@separator)
+      sep = separator || output_separator || ' '
+      sep = Shellwords.escape(sep)
       a = selected_string.split(/#{sep}/)
       a.each do |item|
         log_debug ">> #{item}"
-        selected_array << item if item && item.to_s.length > 0
+        selected_items << item if item && item.to_s.length > 0
       end
-      return selected_array
+      return selected_items
     else
       tmp.close!
       return success
@@ -957,7 +949,7 @@ class MRDialog
 
     run(cmd)
     result = ''
-    if @exit_code == 0
+    if exit_code == 0
       result = tmp.read
       log_debug(result)
     end
@@ -1055,15 +1047,16 @@ class MRDialog
     tmp = Tempfile.new('tmp')
 
     cmd = [ option_string(), '--fselect',
-      "#{filepath.inspect}, #{height} #{width} 2> #{tmp.path.inspect}" ].join(' ')
+      filepath.inspect, height, width, '2>', tmp.path.inspect ].join(' ')
 
     if run(cmd)
+      selected_string = ''
       begin
         selected_string = tmp.readline
       rescue EOFError
-        selected_string = ""
+      ensure
+        tmp.close!
       end
-      tmp.close!
       return selected_string
     else
       tmp.close!
@@ -1133,12 +1126,13 @@ class MRDialog
 
     success = run(cmd)
     if success
+      selected_string = ''
       begin
         selected_string = tmp.readline
       rescue EOFError
-        selected_string = ""
+      ensure
+        tmp.close!
       end
-      tmp.close!      
       return selected_string
     else
       tmp.close!
