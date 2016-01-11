@@ -94,19 +94,20 @@ class TestMRDialog < Minitest::Test
 
   def test_form
     dialog.title = 'FORM'
+    text = %Q{"Form" Test\n\nThis test ensures that Field #1 is equal to 'Value 1', Field #2 is equal to 'Value 2' and Field #3 is equal to 'Value 3'.}
+
     items = []
     items << dialog.form_item(label: 'Field #1', ly: 1, lx: 1, item: 'Value 1', iy: 1, ix: 10, flen: 20, ilen: 0)
     items << dialog.form_item(label: 'Field #2', ly: 2, lx: 1, item: 'Value 2', iy: 2, ix: 10, flen: 20, ilen: 0)
     items << dialog.form_item(label: 'Field #3', ly: 3, lx: 1, item: 'Value 3', iy: 3, ix: 10, flen: 20, ilen: 0)
 
-    result = dialog.form('"Form" Test', items, 0, 0, 0)
+    result = dialog.form(text, items, 0, 0, 0)
     assert_equal('Value 1', result['Field #1'])
     assert_equal('Value 2', result['Field #2'])
     assert_equal('Value 3', result['Field #3'])
 
     cmd = dialog.last_cmd
     assert_includes(cmd, '--form', cmd)
-    assert_includes(cmd, %q{"\"Form\" Test}, cmd)
     assert_includes(cmd, %q{"Field #1" 1 1 "Value 1" 1 10 20 0}, cmd)
     assert_includes(cmd, %q{"Field #2" 2 1 "Value 2" 2 10 20 0}, cmd)
     assert_includes(cmd, %q{"Field #3" 3 1 "Value 3" 3 10 20 0}, cmd)
@@ -150,11 +151,28 @@ class TestMRDialog < Minitest::Test
 
   def test_inputbox
     dialog.title = 'INPUTBOX'
-    result = dialog.inputbox('"Inputbox" Test', 'inputbox test', 0, 0)
-    assert_equal('inputbox test', result)
+    text = %Q{"Inputbox" Test\n\nThis test ensures that the input box is equal to "Inputbox Test".}
+    result = dialog.inputbox(text, 'Inputbox Test', 0, 0)
+    assert_equal('Inputbox Test', result)
     cmd = dialog.last_cmd
     assert_includes(cmd, '--inputbox', cmd)
-    assert_includes(cmd, '"\"Inputbox\" Test" 0 0 "inputbox test', cmd)
+    assert_includes(cmd, ' 0 0 "Inputbox Test', cmd)
+  end
+
+  def test_inputmenu
+    dialog.title = 'INPUTMENU'
+    dialog.visit_items = true
+    dialog.quoted = true
+    text = %Q{"Inputmenu" Test\n\nA test for inputmenu boxes.}
+
+    items = []
+    items << dialog.menu_item(tag: '1 2', item: 'Item #1')
+    items << dialog.menu_item(tag: '2', item: 'Item #2')
+    items << dialog.menu_item(tag: '3', item: 'Item #3')
+
+    result = dialog.inputmenu(text, items, 0, 0, 9)
+    dialog.debug(result.inspect)
+
   end
 
   def test_menu
@@ -172,6 +190,12 @@ class TestMRDialog < Minitest::Test
     assert_includes(cmd, '"3" "Item #3"')
   end
 
+  def test_mixedform
+  end
+
+  def test_mixedgauge
+  end
+
   def test_msgbox
     dialog.title = 'MSGBOX'
     dialog.msgbox('"Msgbox" Test', 24, 80)
@@ -183,10 +207,14 @@ class TestMRDialog < Minitest::Test
 
   def test_pause
     dialog.title = 'PAUSE'
-    dialog.pause('"Pause" Test', 2, 10, 30)
+    text = %Q{"Pause" Test\n\nThis test will pause for 2 seconds and exit.}
+    dialog.pause(text, 2, 10, 60)
     cmd = dialog.last_cmd
     assert_includes(cmd, '--pause')
     assert_includes(cmd, '"\"Pause\" Test" 10 30 2', cmd)
+  end
+
+  def test_passwordbox
   end
 
   def test_prgbox
@@ -234,6 +262,9 @@ class TestMRDialog < Minitest::Test
     cmd = dialog.last_cmd
     assert_equal('Dog', result)
     assert_includes(cmd, '--radiolist')
+  end
+
+  def test_rangebox
   end
 
   def test_tailbox

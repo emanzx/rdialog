@@ -13,6 +13,7 @@ require 'tempfile'
 require 'date'
 require 'time'
 require 'shellwords'
+require 'open3'
 
 #
 # MRDialog - Interface to ncurses dialog program
@@ -698,23 +699,35 @@ class MRDialog
   #
   # Run a command.
   #
-  def run(cmd)
-    result = 'debug'
+  def run(cmd, tmp=nil)
+    success, result = 'debug', 'debug'
     @last_cmd = cmd
-    logger.debug("Command: #{last_cmd}") if logger
+    debug("Command: #{cmd.inspect}")
     if dry_run
       @exit_code = 0
     else
       if block_given?
         result = IO.popen(cmd, 'w') { |fh| yield fh }
       else
-        result = system(cmd)
+        success = system(cmd)
+        if tmp.nil?
+          result = success
+        else
+          begin
+            result = tmp.read
+          rescue EOFError
+            result = success
+          end
+        end
       end
       @exit_code = $?.exitstatus
     end 
-    logger.debug("Exit code: #{exit_code}") if logger
-    result
+    debug("Result: #{result.inspect}")
+    debug("Success: #{success.inspect}")
+    debug("Exit Code: #{exit_code.inspect}")
+    return tmp.nil? ? result : [result, success]
   end
+
 
   ##---- muquit@muquit.com mod starts---
  
@@ -815,7 +828,7 @@ class MRDialog
 
     run(cmd)
     if exit_code == 0
-      @last_result = tmp.read
+      last_result = tmp.read
       debug "result: #{last_result.inspect}"
       lines = last_result
       sep = separator || output_separator || ' '
@@ -1140,6 +1153,43 @@ class MRDialog
     end
   end
 
+  # An **inputmenu** box is very similar to an ordinary **menu** box. There are
+  # only a few differences between them:
+  #
+  # 1. The entries are not automatically centered but left adjusted.
+  # 2. An extra button (called `Rename`) is implied to rename the current item
+  #    when it is pressed.
+  # 3. It is possible to rename the current entry by pressing the `Rename`
+  #    button. Then **rdialog** will return 
+  #
+  # TODO: finish up the logic here.
+  def inputmenu(text, items, height=0, width=0, menu_height=0)
+    tmp = Tempfile.new('tmp')
+
+    tags = items.map{|i| i.first}
+    debug(tags.inspect)
+    items.map!{|item| item.map{|i| i.inspect}}.join(' ')
+    debug(items.inspect)
+
+    # Set quoted option for parsing purposes.
+    @quoted = true
+    cmd = [ option_string(), '--inputmenu',
+      text.inspect, height, width, menu_height, items, '2>', tmp.path.inspect ].join(' ')
+
+    result, success = run(cmd, tmp)
+    debug(result)
+    result = Shellwords.escape(result)
+    debug(result)
+
+    if exit_code == 3
+      debug "Caught it"
+      match = result.match(/RENAMED (.*) ww(.*)/)
+      debug(match.inspect)
+    end
+    tmp.close!
+    return result
+  end
+
   #
   # As its name suggests, a **menu** box is a dialog box that can be used to
   # present a list of choices in the form of a menu for the user to choose.
@@ -1180,6 +1230,13 @@ class MRDialog
     return item
   end
 
+  def mixedform
+    raise NotImplementedError
+  end
+
+  def mixedgauge
+    raise NotImplementedError
+  end
 
   #
   # A message box is very similar to a yes/no box.  The  only  dif-
@@ -1191,6 +1248,24 @@ class MRDialog
   #
   def msgbox(text="Text Goes Here", height=0, width=0)
     run [option_string, '--msgbox', text.inspect, height, width].join(' ')
+  end
+
+  #
+  # A **pause** box displays a meter along the bottom of the box. The meter
+  # indicates how many seconds remain until the end of the pause. The pause
+  # exits when timeout is reached or the user presses the OK button (status OK)
+  # or the user presses the CANCEL button or Esc key.
+  #
+  def pause(text, seconds, height=0, width=0)
+    run [option_string, '--pause', text.inspect, height, width, seconds].join(' ')
+  end
+
+  def passwordbox
+    raise NotImplementedError
+  end
+
+  def passwordform
+    raise NotImplementedError
   end
 
   #
@@ -1268,6 +1343,10 @@ class MRDialog
       return success
     end
 
+  end
+
+  def rangebox
+    raise NotImplementedError
   end
 
   #
@@ -1375,18 +1454,6 @@ class MRDialog
     item << args[:help] if item_help
     return item
   end
-
-  #
-  # A pause  box displays a meter along the bottom of the box. The meter 
-  # indicates how many seconds remain until the end of the pause. The pause
-  # exits when timeout is reached or the user presses the OK button (status OK)
-  # or the user presses the CANCEL button or Esc key.
-  #
-  def pause(text, secs, height=0, width=0)
-    run([ option_string(), '--pause',
-      text.inspect, height, width, secs ].join(' '))
-  end
-
 
   #
   # A mixedform dialog displays a form consisting of labels and fields,  
@@ -1548,7 +1615,7 @@ class MRDialog
       (options << "--scrollbar") if scrollbar
       (options << "--separate-output") if separate_output
       (options << "--separate-widget #{separate_widget.inspect}") if separate_widget
-      (options << shadow ? "--shadow" : "--no-shadow") unless shadow.nil?
+      (options << "--shadow") if shadow
       (options << "--single-quoted") if single_quoted
       (options << "--size-err") if size_err
       (options << "--sleep #{sleep.inspect}") if sleep

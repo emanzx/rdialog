@@ -1,17 +1,17 @@
 require 'minitest/autorun'
 require 'minitest/reporters'
-require_relative '../lib/mrdialog'
+require_relative '../lib/rdialog'
 
 Minitest::Reporters.use!
 
-class TestMRDialog < Minitest::Test
+class TestRDialogOptions < Minitest::Test
 
   attr_reader :dialog
 
   def setup
     @dialog = MRDialog.new
-    @dialog.dry_run = false
-    @dialog.logger = Logger.new(STDOUT)
+    # Uncomment for debugging
+    #@dialog.logger = Logger.new(STDOUT)
   end
 
   def commands
