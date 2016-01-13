@@ -9,7 +9,7 @@ class TestRDialogOptions < Minitest::Test
   attr_reader :dialog
 
   def setup
-    @dialog = MRDialog.new
+    @dialog = RDialog.new
     # Uncomment for debugging
     #@dialog.logger = Logger.new(STDOUT)
   end

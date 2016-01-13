@@ -4,12 +4,12 @@ require_relative '../lib/rdialog'
 
 Minitest::Reporters.use!
 
-class TestMRDialog < Minitest::Test
+class TestRDialog < Minitest::Test
 
   attr_reader :dialog
 
   def setup
-    @dialog = MRDialog.new
+    @dialog = RDialog.new
     @dialog.dry_run = false
     @dialog.logger = Logger.new(STDOUT)
   end

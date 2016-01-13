@@ -18,7 +18,7 @@ require 'open3'
 #
 # MRDialog - Interface to ncurses dialog program
 #
-class MRDialog 
+class RDialog 
 
   #
   # When `dry_run` is set to true, system calls are simply returned rather than
