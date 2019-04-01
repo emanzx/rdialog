@@ -1565,7 +1565,7 @@ class RDialog
       (options << "--aspect #{aspect}") if aspect
       (options << "--backtitle #{backtitle.inspect}") if backtitle
       (options << "--begin #{begin_pos[0..1].join(' ')}") if begin_pos
-      (options << "--cancel-label #{cancel_label.inspect})") if cancel_label
+      (options << "--cancel-label #{cancel_label.inspect}") if cancel_label
       (options << "--clear") if clear
       (options << "--colors") if colors
       (options << "--column-separator #{column_separator.inspect}") if column_separator
