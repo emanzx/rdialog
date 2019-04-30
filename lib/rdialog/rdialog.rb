@@ -1022,17 +1022,15 @@ class RDialog
     if item_size == 8
       delete_items_index = []
       items.each_with_index do |item, idx|
-        puts item.inspect
         if item[6] < 1 
           delete_items_index.push(idx)
         end
       end
-      puts delete_items_index.inspect
       delete_items_index.each do |idx|
         items.delete_at(idx)
       end
     end
-    puts items.inspect
+
     if exit_code == 0
       lines = tmp.readlines
       lines.each_with_index do |val, idx|
