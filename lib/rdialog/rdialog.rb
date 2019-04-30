@@ -1024,7 +1024,7 @@ class RDialog
         if item[7] < 1 
           delete_item_index.push(idx)
         end
-        delete_items_index.each |idx|
+        delete_items_index.each do |idx|
           items.delete_at(idx)
         end
       end
