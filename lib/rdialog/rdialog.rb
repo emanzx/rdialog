@@ -1018,6 +1018,17 @@ class RDialog
     log_debug("Number of items: #{items.size}")
     run(cmd)
 
+    if item_size == 8
+      delete_items_index = []
+      items.each_with_index do |item, idx|
+        if item[7] < 1 
+          delete_item_index.push(idx)
+        end
+        delete_items_index.each |idx|
+          items.delete_at(idx)
+        end
+      end
+    end
     if exit_code == 0
       lines = tmp.readlines
       lines.each_with_index do |val, idx|
