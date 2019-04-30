@@ -1021,7 +1021,7 @@ class RDialog
     if item_size == 8
       delete_items_index = []
       items.each_with_index do |item, idx|
-        if item[7] < 1 
+        if item[6] < 1 
           delete_item_index.push(idx)
         end
         delete_items_index.each do |idx|
