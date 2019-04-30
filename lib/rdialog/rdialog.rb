@@ -988,7 +988,8 @@ class RDialog
   # Use up/down arrows (or control/N, control/P) to move between fields. Use tab
   # to move between windows.
   #
-  # Returns the contents of the form-fields in a Hash.
+  # Returns the contents of the form-fields in a Hash. The text used to
+  # fill non-editable fields (flen is zero or negative) is not written out.
   #
   def form(text, items, height=0, width=0, formheight=0)
     res_hash = {}
@@ -1021,14 +1022,17 @@ class RDialog
     if item_size == 8
       delete_items_index = []
       items.each_with_index do |item, idx|
+        puts item.inspect
         if item[6] < 1 
-          delete_item_index.push(idx)
-        end
-        delete_items_index.each do |idx|
-          items.delete_at(idx)
+          delete_items_index.push(idx)
         end
       end
+      puts delete_items_index.inspect
+      delete_items_index.each do |idx|
+        items.delete_at(idx)
+      end
     end
+    puts items.inspect
     if exit_code == 0
       lines = tmp.readlines
       lines.each_with_index do |val, idx|
