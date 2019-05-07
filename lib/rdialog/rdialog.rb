@@ -1247,10 +1247,26 @@ class RDialog
     raise NotImplementedError
   end
 
-  def mixedgauge
-    raise NotImplementedError
+  # A mixedgauge box displays a meter along the bottom of the box.
+  # The meter indicates the percentage.
+  # It also displays a list of the tag- and item-values at the top
+  # of the box.  See dialog(3) for the tag values.
+  # The text is shown as a caption between the list and meter.  The
+  # percent value denotes the initial percentage shown in the meter.
+  #
+  # No provision is made for reading data from the standard input as
+  # --gauge does.
+  # On exit, no text is written to dialog's output.  The widget
+  # accepts no input, so the exit status is always OK.
+  #
+  def mixedgauge(text, items, height=0, width=0, totalpercent=0)
+    
+    items.map!{|item| item.map{|i| i.inspect}}.join(' ')
+    cmd = [ option_string(), '--mixedgauge',
+      text.inspect, height, width, totalpercent, items ].join(' ')
+    success = run(cmd)
   end
-
+  
   #
   # A message box is very similar to a yes/no box.  The  only  dif-
   # ference  between  a message box and a yes/no box is that a mes-
