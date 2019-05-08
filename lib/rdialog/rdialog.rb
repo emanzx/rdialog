@@ -1260,8 +1260,18 @@ class RDialog
   # accepts no input, so the exit status is always OK.
   #
   def mixedgauge(text, items, height=0, width=0, totalpercent=0)
-    
-    items.map!{|item| item.map{|i| i.inspect}}.join(' ')
+    status = {"succeded" => "0", "failed" => "1", "passed" => "2", "completed" => "3", "checked" => "4", "done" => "5", "skipped" => "6", "in_progress" => "7"}
+    items.map!{|item|
+      [item[0], 
+        if /^[\d]*$/ === item[1] && item[1].to_i >= 0 && item[1].to_i <= 100
+          "-#{item[1]}"
+        elsif status.has_key?(item[1])
+          status["#{item[1]}"]
+        else
+          raise 'In valid Status'
+        end
+        ]
+      }.map!{|item| item.map{|i| i.inspect}}.join(' ')
     cmd = [ option_string(), '--mixedgauge',
       text.inspect, height, width, totalpercent, items ].join(' ')
     success = run(cmd)
