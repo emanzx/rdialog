@@ -13,7 +13,7 @@ begin
 
   dialog = RDialog.new
   dialog.logger = Logger.new(ENV["HOME"] + "/dialog_" + ME + ".log")
-  dialog.clear = true
+  dialog.clear = false
   dialog.title = "MIXEDGAUGE BOX"
 
   text = <<EOF
@@ -22,51 +22,51 @@ This example is taken from dialog/samples/mixgauge
 Hi, this is a mixedgauge box. You can use this to
 present a list of progress for the user to
 view. 
-Process status that supported are [Suceeded, Failed, Passed, Completed, Done, Skipped, In Progress, Checked and 0-100 for percent.]
+Process status that supported are [suceeded, failed, passed, completed, done, skipped, in_progress, checked and 0-100 for percent.]
 Try it now!
 
 EOF
-for percent in 0-100
+for percent in 0..100
   items = []
   process_list = Struct.new(:item, :status)
   data = process_list.new
   data.item = "Process One"
-  data.status = "Succeded"
+  data.status = "succeded"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Two"
-  data.status = "Failed"
+  data.status = "failed"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Three"
-  data.status = "Passed"
+  data.status = "passed"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Four" 
-  data.status = "Completed"
+  data.status = "completed"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Five"
-  data.status = "Done"
+  data.status = "done"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Six"  
-  data.status = "Skipped"
+  data.status = "skipped"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Seven"
-  data.status = "In Progress"
+  data.status = "in_progress"
   items.push(data.to_a)
 
   data = process_list.new
   data.item = "Process Eight"
-  data.status = "Checked"
+  data.status = "checked"
   items.push(data.to_a)
 
   data = process_list.new
@@ -76,11 +76,11 @@ for percent in 0-100
 
   height = 0
   width = 0
-  total_percent = 75
+  percent_total = 75
   
-  selected_item = dialog.menu(text, items, height, width, percent_total)
+  selected_item = dialog.mixedgauge(text, items, height, width, percent_total)
+  sleep 1
 end
-  puts "Selected item: #{selected_item}"
 
 rescue => e
   puts "#{$!}"

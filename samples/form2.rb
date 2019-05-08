@@ -5,7 +5,7 @@
 # specified
 # muquit@muquit.com 
 ########################################################################
-require [File.expand_path(File.dirname(__FILE__)), '..', 'lib', 'mrdialog'].join('/')
+require [File.expand_path(File.dirname(__FILE__)), '..', 'lib', 'rdialog'].join('/')
 
 class TestForm2
     ME = File.basename($0)
@@ -41,7 +41,7 @@ class TestForm2
             msg << "\n"
             msg << "#{label} field is empty"
         end
-        dialog = MRDialog.new
+        dialog = RDialog.new
         dialog.title = "ERROR"
         dialog.clear = true
         dialog.msgbox(msg, 10, 41)
@@ -70,7 +70,7 @@ class TestForm2
             gid = $3
         end
 
-        dialog = MRDialog.new
+        dialog = RDialog.new
         dialog.clear = true
         dialog.logger = Logger.new(ENV["HOME"] + "/dialog_" + ME + ".log")
 
@@ -113,7 +113,7 @@ EOF
             data.item = @hsh[label]
             data.iy = 2
             data.ix = 10
-            data.flen = flen
+            data.flen = 0
             data.ilen = 0
             items.push(data.to_a)
 
